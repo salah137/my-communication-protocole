@@ -17,7 +17,7 @@ volatile uint32_t timer_ticks = 0;
 
 void Systick_Init(void) {
   systemt_t *SysTick = (systemt_t *)SysTick_BASE;
-  uint32_t reload = 25;
+  uint32_t reload = 500;
 
   SysTick->VAL = 0;
   SysTick->LOAD = reload;
