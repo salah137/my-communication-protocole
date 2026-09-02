@@ -22,25 +22,45 @@ typedef enum{
     READING_BYTE
 } reading_t;
 
+typedef enum{
+    SENDING_MODE,
+    SENDING_ADDRESS,
+    SENDING_BYTE
+} sending_t;
+
+
 typedef struct {
-  uint8_t flag;
-  void *body;
   uint8_t scratch_buffer;
   uint8_t mode_buffer;
   uint8_t data_buffer;
   uint8_t address_buffer;
   uint8_t pin;
-  uint8_t i;
-  int32_t last_falling_edge ;
+  uint8_t recieved_bits;
+  uint8_t sent_bits;
+  uint8_t s_data;
+  int32_t last_falling_edge;
   int32_t last_rising_edge;
   last_edge_t last_edge;
   reading_t r;
   modes_t mode;
-} communication_line_param_t;
+} communication_line_rx_param_t;
+
 
 typedef struct {
-  communication_line_param_t *param;
+  uint8_t data_buffer;
+  uint8_t address_buffer;
+  uint8_t pin;
+  uint8_t sent_bits;
+  int32_t last_write_tick;
+  sending_t s;
+  modes_t s_mode;
+} communication_line_tx_param_t;
+
+
+typedef struct {
+  communication_line_rx_param_t *params_rx;
+  communication_line_tx_param_t *params_tx;
   thread_t *communication_thread;
-  
+  void (*writing_func)(void *);
 } communication_line_t;
 
