@@ -12,12 +12,12 @@ typedef struct {
 #define SysTick_CTRL_ENABLE (1UL << 0)
 #define SysTick_CTRL_TICKINT (1UL << 1)
 #define SysTick_CTRL_CLK_SOURCE (1UL << 2)
+#define CYCLES_PER_TICKS 500
 
-volatile uint32_t timer_ticks = 0;
 
 void Systick_Init(void) {
   systemt_t *SysTick = (systemt_t *)SysTick_BASE;
-  uint32_t reload = 500;
+  uint32_t reload = 499;
 
   SysTick->VAL = 0;
   SysTick->LOAD = reload;
