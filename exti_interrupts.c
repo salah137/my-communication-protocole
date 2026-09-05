@@ -4,15 +4,10 @@
 #define EXTI_BASE (0x40010400UL)
 
 // EXTI Peripheral Registers
-#define EXTI_IMR                                                               \
-  (*(volatile uint32_t *)(EXTI_BASE + 0x00U)) // Interrupt Mask Register
-#define EXTI_RTSR                                                              \
-  (*(volatile uint32_t *)(EXTI_BASE +                                          \
-                          0x08U)) // Rising Trigger Selection Register
-#define EXTI_FTSR                                                              \
-  (*(volatile uint32_t *)(EXTI_BASE +                                          \
-                          0x0CU)) // Falling Trigger Selection Register
-#define EXTI_PR (*(volatile uint32_t *)(EXTI_BASE + 0x14U)) // Pending Register
+#define EXTI_IMR  (*(volatile uint32_t *)(EXTI_BASE + 0x00U)) // Interrupt Mask Register
+#define EXTI_RTSR (*(volatile uint32_t *)(EXTI_BASE + 0x08U)) // Rising Trigger Selection Register
+#define EXTI_FTSR (*(volatile uint32_t *)(EXTI_BASE + 0x0CU)) // Falling Trigger Selection Register
+#define EXTI_PR   (*(volatile uint32_t *)(EXTI_BASE + 0x14U)) // Pending Register
 
 // NVIC Registers (Fixed syntax errors)
 #define NVIC_ISER0 (*(volatile uint32_t *)(0xE000E100UL))
