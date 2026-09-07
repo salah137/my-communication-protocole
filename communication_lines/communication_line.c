@@ -79,25 +79,24 @@ communication_line_t *create_line(uint8_t i) {
   communication_line_t *line =
       allocate_dumb(&my_heap, sizeof(communication_line_t));
 
-  
   switch (i) {
-      case 1:
-          line->writing_func = Communication_Line1_Write;
-          break;
+  case 1:
+    line->writing_func = Communication_Line1_Write;
+    break;
 
-      case 2:
-          line->writing_func = Communication_Line2_Write;
-          break;
+  case 2:
+    line->writing_func = Communication_Line2_Write;
+    break;
 
-      case 3:
-          line->writing_func = Communication_Line3_Write;
-          break;
+  case 3:
+    line->writing_func = Communication_Line3_Write;
+    break;
 
-      case 4:
-          line->writing_func = Communication_Line4_Write; 
-          break;
+  case 4:
+    line->writing_func = Communication_Line4_Write;
+    break;
   }
-  
+
   line->communication_thread = thread;
   line->params_rx = params_rx;
   line->params_tx = params_tx;
@@ -224,9 +223,9 @@ void Communication_Line_Default_Read(void *params) {
             params_list->last_edge = FAILING;
           }
         } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = FAILING;  
-        } 
+          params_list->recieved_bits++;
+          params_list->last_edge = FAILING;
+        }
       }
       break;
 
@@ -242,7 +241,8 @@ void Communication_Line_Default_Read(void *params) {
     }
 
     // rising_edge
-  } else if (read_gpiob_level(params_list->pin) == 1) {
+  } 
+  else if (read_gpiob_level(params_list->pin) == 1) {
     switch (params_list->last_edge) {
 
     case RISING:
@@ -264,6 +264,9 @@ void Communication_Line_Default_Read(void *params) {
             params_list->recieved_bits++;
             params_list->last_edge = RISING;
           }
+        } else {
+          params_list->recieved_bits++;
+          params_list->last_edge = RISING;
         }
       }
       break;
@@ -275,13 +278,20 @@ void Communication_Line_Default_Read(void *params) {
         for (uint8_t i = 0; i < bits_count; i++) {
           params_list->scratch_buffer =
               (params_list->scratch_buffer << 1) & ~(1);
-
-          if (check_the_bite(params_list) == 0) {
-            params_list->last_edge = UNKOWN;
-            break;
+          if (params_list->recieved_bits == 0) {
+            if (check_the_bite(params_list) != 0) {
+              params_list->last_edge = UNKOWN;
+              params_list->last_falling_edge = -1;
+              break;
+            } else {
+              params_list->recieved_bits++;
+              params_list->last_edge = RISING;
+              params_list->last_rising_edge = timer_ticks;
+            }
           } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = RISING;
+              params_list->recieved_bits++;
+              params_list->last_edge = RISING;
+              params_list->last_rising_edge = timer_ticks;
           }
         }
       }
@@ -459,6 +469,7 @@ void Communication_Line_Default_Write(void *params) {
         }
       }
     }
+    param_list->sent_bits = 0;
     if (param_list->s == SENDING_BYTE) {
       while (param_list->sent_bits <= 2) {
         if (timer_ticks != param_list->last_write_tick) {
