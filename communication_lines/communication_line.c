@@ -128,27 +128,20 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
 
-      // 11 : packet recived raise exeption or do something
       if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
           (((params_list->mode_buffer) & (1 << 1)) != 0)) {
         params_list->mode = DATA_RECIVED;
         params_list->r = READING_MODE;
-      }
-      // 01 : data transit
-      else if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
-               (((params_list->mode_buffer) & (1 << 1)) == 0)) {
+      } else if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
+                 (((params_list->mode_buffer) & (1 << 1)) == 0)) {
         params_list->mode = DATA_TRANSIT;
         params_list->r = READING_ADDRESS;
-      }
-      // 10 :  target exists
-      else if ((((params_list->mode_buffer) & (1 << 0)) == 0) &&
-               (((params_list->mode_buffer) & (1 << 1)) != 0)) {
+      } else if ((((params_list->mode_buffer) & (1 << 0)) == 0) &&
+                 (((params_list->mode_buffer) & (1 << 1)) != 0)) {
         params_list->mode = TARGET_EXISTS;
         params_list->r = READING_ADDRESS;
-      }
-      // 00 : searching for target
-      else if ((((params_list->mode_buffer) & (1 << 0)) == 0) &&
-               ((params_list->mode_buffer) & (1 << 1)) == 0) {
+      } else if ((((params_list->mode_buffer) & (1 << 0)) == 0) &&
+                 ((params_list->mode_buffer) & (1 << 1)) == 0) {
         params_list->mode = SEARCHING;
         params_list->r = READING_ADDRESS;
       }
@@ -157,7 +150,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
   case READING_ADDRESS:
     if (params_list->recieved_bits == 7) {
       params_list->address_buffer = params_list->scratch_buffer;
-      params_list->last_falling_edge = -1; // TODO: to check
+      params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
 
       switch (params_list->mode) {
@@ -166,13 +159,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
         break;
 
       case SEARCHING:
-        params_list->r = READING_MODE;
-        break;
-
       case TARGET_EXISTS:
-        params_list->r = READING_MODE;
-        break;
-
       default:
         params_list->r = READING_MODE;
         break;
@@ -197,8 +184,6 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
   return 1;
 }
 
-// coock this , not finished at all; TODO: check if you finished this or not
-// yet;
 void Communication_Line_Default_Read(void *params) {
   communication_line_rx_param_t *params_list =
       (communication_line_rx_param_t *)params;
@@ -206,25 +191,29 @@ void Communication_Line_Default_Read(void *params) {
   // falling edge
   if (read_gpiob_level(params_list->pin) == 0) {
 
-    params_list->last_falling_edge = timer_ticks;
     switch (params_list->last_edge) {
     case RISING:
       uint8_t bits_count = timer_ticks - params_list->last_rising_edge;
 
       for (uint8_t i = 0; i < bits_count; i++) {
-        params_list->scratch_buffer = (params_list->scratch_buffer << 1) | (1);
+        params_list->scratch_buffer =
+            (params_list->scratch_buffer << 1) | (1);
+
         if (params_list->recieved_bits != 0) {
           if (check_the_bite(params_list) == 0) {
             params_list->last_edge = UNKOWN;
+            params_list->scratch_buffer = 0;
             params_list->last_falling_edge = -1;
             break;
           } else {
             params_list->recieved_bits++;
             params_list->last_edge = FAILING;
+            params_list->last_falling_edge = timer_ticks;
           }
         } else {
           params_list->recieved_bits++;
           params_list->last_edge = FAILING;
+          params_list->last_falling_edge = timer_ticks;
         }
       }
       break;
@@ -241,8 +230,7 @@ void Communication_Line_Default_Read(void *params) {
     }
 
     // rising_edge
-  } 
-  else if (read_gpiob_level(params_list->pin) == 1) {
+  } else if (read_gpiob_level(params_list->pin) == 1) {
     switch (params_list->last_edge) {
 
     case RISING:
@@ -253,11 +241,14 @@ void Communication_Line_Default_Read(void *params) {
       uint8_t bits_count = timer_ticks - params_list->last_falling_edge;
 
       for (uint8_t i = 0; i < bits_count; i++) {
-        params_list->scratch_buffer = (params_list->scratch_buffer << 1) & ~(1);
+          params_list->scratch_buffer =
+              (params_list->scratch_buffer << 1) & ~(1);
 
+        // printf("check FAILIN \n");
         if (params_list->recieved_bits != 0) {
           if (check_the_bite(params_list) == 0) {
             params_list->last_edge = UNKOWN;
+            params_list->scratch_buffer = 0;
             params_list->last_falling_edge = -1;
             break;
           } else {
@@ -275,6 +266,10 @@ void Communication_Line_Default_Read(void *params) {
 
       if (params_list->last_falling_edge != -1) {
         uint8_t bits_count = (timer_ticks - params_list->last_falling_edge) - 1;
+
+        if (bits_count == 0) {
+          params_list->last_edge = RISING;
+        }
         for (uint8_t i = 0; i < bits_count; i++) {
           params_list->scratch_buffer =
               (params_list->scratch_buffer << 1) & ~(1);
@@ -289,9 +284,9 @@ void Communication_Line_Default_Read(void *params) {
               params_list->last_rising_edge = timer_ticks;
             }
           } else {
-              params_list->recieved_bits++;
-              params_list->last_edge = RISING;
-              params_list->last_rising_edge = timer_ticks;
+            params_list->recieved_bits++;
+            params_list->last_edge = RISING;
+            params_list->last_rising_edge = timer_ticks;
           }
         }
       }
@@ -300,8 +295,6 @@ void Communication_Line_Default_Read(void *params) {
 
     params_list->last_rising_edge = timer_ticks;
   }
-
-  __asm__ volatile("svc #0");
 
   return;
 }
