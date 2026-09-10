@@ -121,6 +121,9 @@ void Init_Communication_Lines(void) {
 }
 
 int check_the_bite(communication_line_rx_param_t *params_list) {
+    if(params_list->recieved_bits == 0){
+        return 1;
+    }
   switch (params_list->r) {
   case READING_MODE:
     if (params_list->recieved_bits == 1) {
@@ -200,7 +203,6 @@ void Communication_Line_Default_Read(void *params) {
         params_list->scratch_buffer =
             (params_list->scratch_buffer << 1) | (1);
 
-        if (params_list->recieved_bits != 0) {
           if (check_the_bite(params_list) == 0) {
             params_list->last_edge = UNKOWN;
             params_list->scratch_buffer = 0;
@@ -211,11 +213,6 @@ void Communication_Line_Default_Read(void *params) {
             params_list->last_edge = FAILING;
             params_list->last_falling_edge = timer_ticks;
           }
-        } else {
-          params_list->recieved_bits++;
-          params_list->last_edge = FAILING;
-          params_list->last_falling_edge = timer_ticks;
-        }
       }
       break;
 
@@ -245,8 +242,6 @@ void Communication_Line_Default_Read(void *params) {
           params_list->scratch_buffer =
               (params_list->scratch_buffer << 1) & ~(1);
 
-        // printf("check FAILIN \n");
-        if (params_list->recieved_bits != 0) {
           if (check_the_bite(params_list) == 0) {
             params_list->last_edge = UNKOWN;
             params_list->scratch_buffer = 0;
@@ -256,10 +251,7 @@ void Communication_Line_Default_Read(void *params) {
             params_list->recieved_bits++;
             params_list->last_edge = RISING;
           }
-        } else {
-          params_list->recieved_bits++;
-          params_list->last_edge = RISING;
-        }
+
       }
       break;
 
@@ -274,7 +266,6 @@ void Communication_Line_Default_Read(void *params) {
         for (uint8_t i = 0; i < bits_count; i++) {
           params_list->scratch_buffer =
               (params_list->scratch_buffer << 1) & ~(1);
-          if (params_list->recieved_bits == 0) {
             if (check_the_bite(params_list) != 0) {
               params_list->last_edge = UNKOWN;
               params_list->last_falling_edge = -1;
@@ -284,11 +275,6 @@ void Communication_Line_Default_Read(void *params) {
               params_list->last_edge = RISING;
               params_list->last_rising_edge = timer_ticks;
             }
-          } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = RISING;
-            params_list->last_rising_edge = timer_ticks;
-          }
         }
       }
       break;
