@@ -1,39 +1,62 @@
+#include <pthread.h>
+#include <stdatomic.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-// #include "./gpio_driver.c"
-//  --- ENUMS & TYPES DEFINITIONS ---
-typedef enum { READING_MODE, READING_ADDRESS, READING_BYTE } ReadState;
+#include <unistd.h>
 
 typedef enum {
-  WAITING,
   DATA_TRANSIT,
   TARGET_EXISTS,
+  DATA_RECIVED,
   SEARCHING,
-  DATA_RECIVED
-} ModeState;
+  WAITING
+} modes_t;
 
-typedef enum { UNKOWN, RISING, FAILING } EdgeState;
+typedef enum { RISING, FAILING, UNKOWN } last_edge_t;
+
+typedef enum { READING_MODE, READING_ADDRESS, READING_BYTE } reading_t;
+
+typedef enum { SENDING_MODE, SENDING_ADDRESS, SENDING_BYTE } sending_t;
 
 typedef struct {
-  uint8_t pin;
-  uint8_t recieved_bits;
-  int32_t last_falling_edge;
-  int32_t last_rising_edge;
-  EdgeState last_edge;
-  ModeState mode;
-  ReadState r;
   uint8_t scratch_buffer;
   uint8_t mode_buffer;
-  uint8_t address_buffer;
   uint8_t data_buffer;
+  uint8_t address_buffer;
+  uint8_t pin;
+  uint8_t recieved_bits;
+  uint8_t sent_bits;
+  uint8_t s_data;
+  int32_t last_falling_edge;
+  int32_t last_rising_edge;
+  last_edge_t last_edge;
+  reading_t r;
+  modes_t mode;
 } communication_line_rx_param_t;
 
-// --- HARDWARE SIMULATION GLOBALS ---
+typedef struct {
+  uint8_t data_buffer;
+  uint8_t address_buffer;
+  uint8_t pin;
+  uint8_t sent_bits;
+  int32_t last_write_tick;
+  sending_t s;
+  modes_t s_mode;
+} communication_line_tx_param_t;
+
+typedef struct {
+  communication_line_rx_param_t *params_rx;
+  communication_line_tx_param_t *params_tx;
+  // thread_t *communication_thread;
+  void (*writing_func)(void *);
+} communication_line_t;
+
 volatile uint32_t timer_ticks = 0;
 uint8_t simulated_gpio_stream[100];
 uint32_t max_stream_ticks = 0;
-
+communication_line_tx_param_t test_param = {0};
+communication_line_t instance = {0};
 uint8_t read_gpiob_level(uint8_t pin) {
   if (timer_ticks < max_stream_ticks) {
     return simulated_gpio_stream[timer_ticks];
@@ -41,237 +64,285 @@ uint8_t read_gpiob_level(uint8_t pin) {
   return 1; // Idle HIGH
 }
 
-// --- YOUR EXACT CHECK_THE_BITE FUNCTION ---
-int check_the_bite(communication_line_rx_param_t *params_list) {
-  switch (params_list->r) {
-  case READING_MODE:
-    if (params_list->recieved_bits == 1) {
-      params_list->mode_buffer = params_list->scratch_buffer;
-      params_list->last_falling_edge = -1;
-      params_list->recieved_bits = 0;
+int p = 0;
 
-      if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
-          (((params_list->mode_buffer) & (1 << 1)) != 0)) {
-        params_list->mode = DATA_RECIVED;
-        params_list->r = READING_MODE;
-      } else if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
-                 (((params_list->mode_buffer) & (1 << 1)) == 0)) {
-        params_list->mode = DATA_TRANSIT;
-        params_list->r = READING_ADDRESS;
-      } else if ((((params_list->mode_buffer) & (1 << 0)) == 0) &&
-                 (((params_list->mode_buffer) & (1 << 1)) != 0)) {
-        params_list->mode = TARGET_EXISTS;
-        params_list->r = READING_ADDRESS;
-      } else if ((((params_list->mode_buffer) & (1 << 0)) == 0) &&
-                 ((params_list->mode_buffer) & (1 << 1)) == 0) {
-        params_list->mode = SEARCHING;
-        params_list->r = READING_ADDRESS;
-      }
-    }
-    break;
-  case READING_ADDRESS:
-    if (params_list->recieved_bits == 7) {
-      printf("scratch : 0x%02X | address : 0x%02X\n",
-             params_list->scratch_buffer, params_list->address_buffer);
-      params_list->address_buffer = params_list->scratch_buffer;
-      params_list->last_falling_edge = -1;
-      params_list->recieved_bits = 0;
-      printf("scratch : 0x%02X | address : 0x%02X\n",
-             params_list->scratch_buffer, params_list->address_buffer);
+void reset_pin_a(uint8_t pin) { simulated_gpio_stream[p++] = 0; }
 
-      switch (params_list->mode) {
-      case DATA_TRANSIT:
-        params_list->r = READING_BYTE;
-        break;
+void set_pin_a(uint8_t pin) { simulated_gpio_stream[p++] = 1; }
 
-      case SEARCHING:
-      case TARGET_EXISTS:
-      default:
-        params_list->r = READING_MODE;
-        break;
-      }
-    }
-    break;
-  case READING_BYTE:
-    if (params_list->recieved_bits == 7) {
-      params_list->data_buffer = params_list->scratch_buffer;
-      params_list->last_falling_edge = -1;
-      params_list->recieved_bits = 0;
+void Communication_Line_Default_Write(void *params) {
+  communication_line_tx_param_t *param_list =
+      (communication_line_tx_param_t *)params;
 
-      params_list->r = READING_MODE;
-    }
-    break;
-  }
+  switch (param_list->s) {
 
-  if (params_list->recieved_bits == 0) {
-    return 0;
-  }
+  case SENDING_MODE:
+    while (1) {
+      if (timer_ticks != param_list->last_write_tick) {
+        switch (param_list->sent_bits) {
+        case 0:
+          reset_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          break;
 
-  return 1;
-}
-
-void Communication_Line_Default_Read(void *params) {
-  communication_line_rx_param_t *params_list =
-      (communication_line_rx_param_t *)params;
-
-  // falling edge
-  if (read_gpiob_level(params_list->pin) == 0) {
-
-    switch (params_list->last_edge) {
-    case RISING:
-      uint8_t bits_count = timer_ticks - params_list->last_rising_edge;
-
-      for (uint8_t i = 0; i < bits_count; i++) {
-        printf("check RISING \n");
-        params_list->scratch_buffer =
-            (params_list->scratch_buffer << 1) | (1);
-
-        if (params_list->recieved_bits != 0) {
-          if (check_the_bite(params_list) == 0) {
-            params_list->last_edge = UNKOWN;
-            params_list->scratch_buffer = 0;
-            params_list->last_falling_edge = -1;
+        case 1:
+          switch (param_list->s_mode) {
+          case SEARCHING:
+            reset_pin_a(param_list->pin);
             break;
-          } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = FAILING;
-            params_list->last_falling_edge = timer_ticks;
+
+          case DATA_TRANSIT:
+            set_pin_a(param_list->pin);
+            break;
+
+          case DATA_RECIVED:
+            set_pin_a(param_list->pin);
+            break;
+
+          case TARGET_EXISTS:
+            reset_pin_a(param_list->pin);
+            break;
+
+          default:
+            break;
           }
-        } else {
-          params_list->recieved_bits++;
-          params_list->last_edge = FAILING;
-          params_list->last_falling_edge = timer_ticks;
+          param_list->sent_bits++;
+          break;
+
+        case 2:
+          switch (param_list->s_mode) {
+          case SEARCHING:
+            reset_pin_a(param_list->pin);
+            break;
+
+          case DATA_TRANSIT:
+            reset_pin_a(param_list->pin);
+            break;
+
+          case DATA_RECIVED:
+            set_pin_a(param_list->pin);
+            break;
+
+          case TARGET_EXISTS:
+            set_pin_a(param_list->pin);
+            break;
+
+          default:
+            break;
+          }
+          param_list->sent_bits++;
+          break;
+
+        case 3:
+          switch (param_list->s_mode) {
+          case SEARCHING:
+            param_list->s = SENDING_ADDRESS;
+            break;
+
+          case DATA_TRANSIT:
+            param_list->s = SENDING_ADDRESS;
+            reset_pin_a(param_list->pin);
+            break;
+
+          case DATA_RECIVED:
+            param_list->s = SENDING_MODE;
+            set_pin_a(param_list->pin);
+            break;
+
+          case TARGET_EXISTS:
+            param_list->s = SENDING_ADDRESS;
+
+            set_pin_a(param_list->pin);
+            break;
+
+          default:
+            break;
+          }
+          param_list->sent_bits = 0;
+          break;
+
+        default:
+          break;
+        }
+
+        param_list->last_write_tick = timer_ticks;
+
+        if (param_list->sent_bits == 0) {
+          break;
         }
       }
-      break;
-
-    case FAILING:
-      // impossible
-      break;
-
-    case UNKOWN:
-      if (params_list->last_falling_edge == -1) {
-        params_list->last_falling_edge = timer_ticks;
-      }
-      break;
     }
 
-    // rising_edge
-  } else if (read_gpiob_level(params_list->pin) == 1) {
-    switch (params_list->last_edge) {
+    while (param_list->sent_bits <= 1) {
+      if (timer_ticks != param_list->last_write_tick) {
+          printf("holola \n");
+          
+        set_pin_a(param_list->pin);
+        param_list->sent_bits++;
+        param_list->last_write_tick = timer_ticks;
+      }
+    }
+    param_list->sent_bits = 0;
+    if (param_list->s == SENDING_ADDRESS) {
+      instance.writing_func((void *)param_list);
+    }
+    break;
 
-    case RISING:
-      // impossible
-      break;
+  case SENDING_ADDRESS:
 
-    case FAILING:
-      uint8_t bits_count = timer_ticks - params_list->last_falling_edge;
-
-      for (uint8_t i = 0; i < bits_count; i++) {
-          params_list->scratch_buffer =
-              (params_list->scratch_buffer << 1) & ~(1);
-
-        // printf("check FAILIN \n");
-        if (params_list->recieved_bits != 0) {
-          if (check_the_bite(params_list) == 0) {
-            params_list->last_edge = UNKOWN;
-            params_list->scratch_buffer = 0;
-            params_list->last_falling_edge = -1;
-            break;
-          } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = RISING;
-          }
-        } else {
-          params_list->recieved_bits++;
-          params_list->last_edge = RISING;
+      while (param_list->sent_bits <= 0) {
+        if (timer_ticks != param_list->last_write_tick) {            
+          reset_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
         }
       }
-      break;
 
-    case UNKOWN:
+    while (1) {
+      if (param_list->last_write_tick != timer_ticks) {
+        if (param_list->sent_bits <= 8) {
+          uint8_t bit_to_write = (((param_list->address_buffer) &
+                                   (1 << param_list->sent_bits)) == 0)
+                                     ? 0
+                                     : 1;
 
-      if (params_list->last_falling_edge != -1) {
-        uint8_t bits_count = (timer_ticks - params_list->last_falling_edge) - 1;
+          if (bit_to_write == 1) {
+            set_pin_a(param_list->pin);
+          } else if (bit_to_write == 0) {
+            reset_pin_a(param_list->pin);
+          }
+          if (param_list->sent_bits == 8) {
+              while (1) {
+                if (param_list->last_write_tick != timer_ticks) {
+                  printf("hola reset\n");
+                  reset_pin_a(param_list->pin);
+                  param_list->last_write_tick = timer_ticks;
+                  break;
+                }
+              }
 
-        if (bits_count == 0) {
-          params_list->last_edge = RISING;
-        }
-        for (uint8_t i = 0; i < bits_count; i++) {
-          params_list->scratch_buffer =
-              (params_list->scratch_buffer << 1) & ~(1);
-          if (params_list->recieved_bits == 0) {
-            if (check_the_bite(params_list) != 0) {
-              params_list->last_edge = UNKOWN;
-              params_list->last_falling_edge = -1;
+            switch (param_list->s_mode) {
+            case SEARCHING:
+              param_list->s = SENDING_MODE;
               break;
-            } else {
-              params_list->recieved_bits++;
-              params_list->last_edge = RISING;
-              params_list->last_rising_edge = timer_ticks;
+            case DATA_TRANSIT:
+              param_list->s = SENDING_BYTE;
+
+              break;
+            case TARGET_EXISTS:
+              param_list->s = SENDING_MODE;
+              break;
+            default:
+              break;
             }
-          } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = RISING;
-            params_list->last_rising_edge = timer_ticks;
+            break;
           }
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
         }
       }
-      break;
     }
+    
+    param_list->sent_bits = 0;
+    if (param_list->s == SENDING_BYTE) {
+      while (param_list->sent_bits <= 1) {
+        if (timer_ticks != param_list->last_write_tick) {
+          set_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
+      }
+      param_list->sent_bits = 0;
+      
+      instance.writing_func((void *)param_list);
+    }
+ 
+    break;
+  case SENDING_BYTE:
+      while (param_list->sent_bits <= 0) {
+        if (timer_ticks != param_list->last_write_tick) {            
+          reset_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
+      }
 
-    params_list->last_rising_edge = timer_ticks;
+    while (1) {
+      if (param_list->last_write_tick != timer_ticks) {
+        if (param_list->sent_bits <= 8) {
+          uint8_t bit_to_write =
+              (((param_list->data_buffer) & (1 << param_list->sent_bits)) == 0)
+                  ? 0
+                  : 1;
+
+          if (bit_to_write == 1) {
+            set_pin_a(param_list->pin);
+          } else if (bit_to_write == 0) {
+            reset_pin_a(param_list->pin);
+          }
+          if (param_list->sent_bits == 8) {
+            param_list->s = SENDING_MODE;
+            reset_pin_a(param_list->pin);
+            param_list->last_write_tick = timer_ticks;
+
+            param_list->sent_bits = 0;
+            while (param_list->sent_bits <= 1) {
+              if (timer_ticks != param_list->last_write_tick) {
+                set_pin_a(param_list->pin);
+                param_list->sent_bits++;
+                param_list->last_write_tick = timer_ticks;
+              }
+            }
+            param_list->sent_bits = 0;
+            
+            break;
+          }
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
+      }
+    }
+    break;
   }
-
-  return;
 }
 
-// --- MAIN SIMULATION DRIVER ---
+// TODO : test the writ11010110ing, not that one in the wall!
+void testing_write(void) {
+  instance.writing_func = Communication_Line_Default_Write;
+  test_param.s_mode = DATA_TRANSIT;
+  test_param.address_buffer = 0b11101110;
+  test_param.data_buffer = 0b11010110;
+
+  instance.writing_func(&test_param);
+}
+
+static pthread_t ticker_thread;
+static volatile int ticker_running = 1;
+
+void *tick_isr(void *arg) {
+  while (ticker_running) {
+    usleep(1000); // 1ms "tick" - tune to whatever your real SysTick period is
+    timer_ticks++;
+    //  printf("%d \n",timer_ticks);
+  }
+  return NULL;
+}
+
+void test_array() {
+  int size = sizeof(simulated_gpio_stream);
+  for (int i = 0; i < size; i++) {
+    printf("%d", simulated_gpio_stream[i]);
+  }
+}
+
 int main(void) {
-  communication_line_rx_param_t rx = {0};
-  rx.pin = 1;
-  rx.r = READING_MODE;
-  rx.last_edge = UNKOWN;
-  rx.last_falling_edge = -1;
+  pthread_create(&ticker_thread, NULL, tick_isr, NULL);
 
-  // Load your exact signal stream levels
-  uint8_t stream[] = {
-      1, 1, 1, 0, 0, 1, 0,
-      1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 
-      1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 0, 0, 
-      1, 1, 1,
-  };
-  max_stream_ticks = sizeof(stream);
-  for (uint32_t i = 0; i < max_stream_ticks; i++) {
-    simulated_gpio_stream[i + 2] = stream[i]; // Start at tick 2
-  }
-  max_stream_ticks += 2;
+  testing_write();
 
-  printf("--- STARTING REAL CODE SIMULATION ---\n");
-
-  uint8_t previous_pin_level = read_gpiob_level(rx.pin);
-
-  for (timer_ticks = 2; timer_ticks < max_stream_ticks; timer_ticks++) {
-    uint8_t current_pin_level = read_gpiob_level(rx.pin);
-
-    // Only fire the handler if an edge transition (0->1 or 1->0) occurred
-    if (current_pin_level != previous_pin_level) {
-      Communication_Line_Default_Read(&rx);
-    }
-
-    printf("Tick %2d | Pin: %d | RecvBits: %d | State(r): %d | Mode: %d | "
-           "Scratch: 0x%02X | last_edge = %d | last_falling = %d | last_rising "
-           "= %d | ModeBuf: 0x%02X | AddrBuf: 0x%02X | DATABuf: 0x%02X\n",
-           timer_ticks, current_pin_level, rx.recieved_bits, rx.r, rx.mode,
-           rx.scratch_buffer, rx.last_edge, rx.last_falling_edge,
-           rx.last_rising_edge, rx.mode_buffer, rx.address_buffer,
-           rx.data_buffer);
-    previous_pin_level = current_pin_level;
-  }
-  printf("\n--- FINAL MEMORY RESULTS ---\n");
-  printf("mode_buffer    : 0x%02X\n", rx.mode_buffer);
-  printf("address_buffer : 0x%02X\n", rx.address_buffer);
-  printf("data_buffer    : 0x%02X\n", rx.data_buffer);
-
+  ticker_running = 0;
+  test_array();
+  printf("\n");
+  pthread_join(ticker_thread, NULL);
   return 0;
 }

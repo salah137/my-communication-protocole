@@ -189,6 +189,7 @@ void Communication_Line_Default_Read(void *params) {
       (communication_line_rx_param_t *)params;
 
   // falling edge
+
   if (read_gpiob_level(params_list->pin) == 0) {
 
     switch (params_list->last_edge) {
@@ -304,6 +305,7 @@ void Communication_Line_Default_Write(void *params) {
       (communication_line_tx_param_t *)params;
 
   switch (param_list->s) {
+
   case SENDING_MODE:
     while (1) {
       if (timer_ticks != param_list->last_write_tick) {
@@ -399,33 +401,30 @@ void Communication_Line_Default_Write(void *params) {
           break;
         }
       }
-      break;
     }
 
-    set_pin_a(param_list->pin);
-    param_list->sent_bits = 0;
-
-    while (param_list->sent_bits <= 2) {
-      if (timer_ticks != param_list->last_write_tick) {
+    while (param_list->sent_bits <= 1) {
+      if (timer_ticks != param_list->last_write_tick) {          
+        set_pin_a(param_list->pin);
         param_list->sent_bits++;
         param_list->last_write_tick = timer_ticks;
       }
     }
     param_list->sent_bits = 0;
     if (param_list->s == SENDING_ADDRESS) {
-      lines[(param_list->pin) - 1]->writing_func((void *)param_list);
+      lines[param_list->pin - 1]->writing_func((void *)param_list);
     }
     break;
 
   case SENDING_ADDRESS:
 
-    while (1) {
-      if (param_list->last_write_tick != timer_ticks) {
-        reset_pin_a(param_list->pin);
-        param_list->last_write_tick = timer_ticks;
-        break;
+      while (param_list->sent_bits <= 0) {
+        if (timer_ticks != param_list->last_write_tick) {            
+          reset_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
       }
-    }
 
     while (1) {
       if (param_list->last_write_tick != timer_ticks) {
@@ -440,7 +439,15 @@ void Communication_Line_Default_Write(void *params) {
           } else if (bit_to_write == 0) {
             reset_pin_a(param_list->pin);
           }
-          if (param_list->sent_bits == 7) {
+          if (param_list->sent_bits == 8) {
+              while (1) {
+                if (param_list->last_write_tick != timer_ticks) {
+                  reset_pin_a(param_list->pin);
+                  param_list->last_write_tick = timer_ticks;
+                  break;
+                }
+              }
+
             switch (param_list->s_mode) {
             case SEARCHING:
               param_list->s = SENDING_MODE;
@@ -462,22 +469,30 @@ void Communication_Line_Default_Write(void *params) {
         }
       }
     }
+    
     param_list->sent_bits = 0;
     if (param_list->s == SENDING_BYTE) {
-      while (param_list->sent_bits <= 2) {
+      while (param_list->sent_bits <= 1) {
         if (timer_ticks != param_list->last_write_tick) {
+          set_pin_a(param_list->pin);
           param_list->sent_bits++;
           param_list->last_write_tick = timer_ticks;
         }
       }
-      lines[(param_list->pin) - 1]->writing_func((void *)param_list);
+      param_list->sent_bits = 0;
+      
+      lines[param_list->pin - 1]->writing_func((void *)param_list);
     }
+ 
     break;
   case SENDING_BYTE:
-    if (param_list->last_write_tick != timer_ticks) {
-      reset_pin_a(param_list->pin);
-      param_list->last_write_tick = timer_ticks;
-    }
+      while (param_list->sent_bits <= 0) {
+        if (timer_ticks != param_list->last_write_tick) {            
+          reset_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
+      }
 
     while (1) {
       if (param_list->last_write_tick != timer_ticks) {
@@ -492,10 +507,21 @@ void Communication_Line_Default_Write(void *params) {
           } else if (bit_to_write == 0) {
             reset_pin_a(param_list->pin);
           }
-          if (param_list->sent_bits == 7) {
+          if (param_list->sent_bits == 8) {
             param_list->s = SENDING_MODE;
-            set_pin_a(param_list->pin);
+            reset_pin_a(param_list->pin);
             param_list->last_write_tick = timer_ticks;
+
+            param_list->sent_bits = 0;
+            while (param_list->sent_bits <= 1) {
+              if (timer_ticks != param_list->last_write_tick) {
+                set_pin_a(param_list->pin);
+                param_list->sent_bits++;
+                param_list->last_write_tick = timer_ticks;
+              }
+            }
+            param_list->sent_bits = 0;
+            
             break;
           }
           param_list->sent_bits++;
