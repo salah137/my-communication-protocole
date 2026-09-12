@@ -32,8 +32,14 @@ typedef enum{
 typedef struct {
   uint8_t scratch_buffer;
   uint8_t mode_buffer;
+  uint8_t finished_reading_mode;
+  
   uint8_t data_buffer;
+  uint8_t finished_reading_data;
+  
   uint8_t address_buffer;
+  uint8_t finished_reading_address;
+  
   uint8_t pin;
   uint8_t recieved_bits;
   uint8_t sent_bits;
@@ -56,6 +62,11 @@ typedef struct {
   modes_t s_mode;
 } communication_line_tx_param_t;
 
+typedef struct {
+    uint8_t address;
+    uint8_t nodes_number;
+    uint8_t pin;
+} accessible_address_t;
 
 typedef struct {
   communication_line_rx_param_t *params_rx;

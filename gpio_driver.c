@@ -51,7 +51,7 @@ void init_gpiob() {
 void init_gpio() {
   RCC_APB2ENR |= (1U << 0) | (1 << 2) | (1 << 3);
 
-  init_gpioa(); // for input lines
+  init_gpioa(); // for output lines
   init_gpiob(); // make them external interrupts
 
   enable_exti();

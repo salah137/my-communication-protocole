@@ -13,6 +13,8 @@ extern void reset_pin_a(uint8_t pin);
 extern void set_pin_a(uint8_t pin);
 
 communication_line_t **lines;
+accessible_address_t** accessible_address;
+uint8_t accessible_address_count;
 
 void Communication_Line1_Read(void *params)
     __attribute((weak, alias("Communication_Line_Default_Read")));
@@ -96,7 +98,7 @@ communication_line_t *create_line(uint8_t i) {
     line->writing_func = Communication_Line4_Write;
     break;
   }
-
+  
   line->communication_thread = thread;
   line->params_rx = params_rx;
   line->params_tx = params_tx;
@@ -106,7 +108,9 @@ communication_line_t *create_line(uint8_t i) {
 
 void Init_Communication_Lines(void) {
   lines = allocate_dumb(&my_heap, sizeof(communication_line_t *) * 4);
-
+  accessible_address = allocate_dumb(&my_heap, sizeof(accessible_address_t *)*16);
+  accessible_address_count = 0;
+  
   communication_line_t *l;
 
   for (int i = 1; i <= 4; i++) {
@@ -130,7 +134,8 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->mode_buffer = params_list->scratch_buffer;
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
-
+      params_list->finished_reading_mode = 1;
+      
       if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
           (((params_list->mode_buffer) & (1 << 1)) != 0)) {
         params_list->mode = DATA_RECIVED;
@@ -155,14 +160,20 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->address_buffer = params_list->scratch_buffer;
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
-
+      params_list->finished_reading_address = 1;
+      
       switch (params_list->mode) {
       case DATA_TRANSIT:
         params_list->r = READING_BYTE;
         break;
 
       case SEARCHING:
+          params_list->r = READING_MODE;
+          break;
+        
       case TARGET_EXISTS:
+          params_list->r = READING_BYTE;
+          break;
       default:
         params_list->r = READING_MODE;
         break;
@@ -174,7 +185,8 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->data_buffer = params_list->scratch_buffer;
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
-
+      params_list->finished_reading_data = 1;
+      
       params_list->r = READING_MODE;
     }
     break;

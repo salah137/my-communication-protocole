@@ -1,6 +1,6 @@
-## TODO :
-  - finish the bit reading, 
-  - figure out if u gonna do big endian or little endian, 
-  - see how to raise a software interrupt;
-  - make the code structure code cleaner and better,
-  - think about multithreading,
+# TODO :
+   - finish communication_handler
+   - - make the machine state
+   - make a software interrupt fires when the packet reading or writing finishs
+   - find a way to test it all
+   

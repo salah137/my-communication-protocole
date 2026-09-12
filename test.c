@@ -22,8 +22,14 @@ typedef enum { SENDING_MODE, SENDING_ADDRESS, SENDING_BYTE } sending_t;
 typedef struct {
   uint8_t scratch_buffer;
   uint8_t mode_buffer;
+  uint8_t finished_reading_mode;
+  
   uint8_t data_buffer;
+  uint8_t finished_reading_data;
+
   uint8_t address_buffer;
+  uint8_t finished_reading_address;
+  
   uint8_t pin;
   uint8_t recieved_bits;
   uint8_t sent_bits;
@@ -33,6 +39,8 @@ typedef struct {
   last_edge_t last_edge;
   reading_t r;
   modes_t mode;
+
+  
 } communication_line_rx_param_t;
 
 typedef struct {
