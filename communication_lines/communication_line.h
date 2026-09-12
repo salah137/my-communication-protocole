@@ -43,7 +43,6 @@ typedef struct {
   uint8_t pin;
   uint8_t recieved_bits;
   uint8_t sent_bits;
-  uint8_t s_data;
   int32_t last_falling_edge;
   int32_t last_rising_edge;
   last_edge_t last_edge;

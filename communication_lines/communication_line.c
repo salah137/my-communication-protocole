@@ -139,7 +139,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
           (((params_list->mode_buffer) & (1 << 1)) != 0)) {
         params_list->mode = DATA_RECIVED;
-        params_list->r = READING_MODE;
+        params_list->r = READING_BYTE;
       } else if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
                  (((params_list->mode_buffer) & (1 << 1)) == 0)) {
         params_list->mode = DATA_TRANSIT;
@@ -373,7 +373,7 @@ void Communication_Line_Default_Write(void *params) {
             break;
 
           case DATA_RECIVED:
-            param_list->s = SENDING_MODE;
+            param_list->s = SENDING_BYTE;
             set_pin_a(param_list->pin);
             break;
 
@@ -455,7 +455,7 @@ void Communication_Line_Default_Write(void *params) {
 
               break;
             case TARGET_EXISTS:
-              param_list->s = SENDING_MODE;
+              param_list->s = SENDING_BYTE;
               break;
             default:
               break;
