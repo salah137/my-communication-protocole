@@ -79,29 +79,12 @@ void Communication_handler(void *params) {
   communication_line_rx_param_t *rx_params = params_list->params_rx;
   communication_line_tx_param_t *tx_params = params_list->params_tx;
 
-  if (rx_params->finished_reading_mode == 1) {
+  if (rx_params->finished_reading_data == 1) {
     switch (rx_params->mode) {
     case SEARCHING:
-      break;
 
-    case DATA_TRANSIT:
-      break;
+      insert_accessible_address(rx_params->pin, 0, rx_params->data_buffer);
 
-    case DATA_RECIVED:
-      break;
-
-    case TARGET_EXISTS:
-      break;
-
-    default:
-      break;
-    }
-    rx_params->finished_reading_mode = 0;
-  }
-
-  if (rx_params->finished_reading_address == 1) {
-    switch (rx_params->mode) {
-    case SEARCHING:
       if (rx_params->address_buffer == my_address) {
         tx_params->address_buffer = my_address;
         tx_params->data_buffer = 0b00000000;
@@ -146,94 +129,9 @@ void Communication_handler(void *params) {
 
     case DATA_RECIVED:
 
-      break;
+      // insert_accessible_address(rx_params->pin, uint8_t nodes_number, uint8_t
+      // address); holy shiiit
 
-    case TARGET_EXISTS:
-      uint8_t wrote = 0;
-
-      for (uint8_t i = 0; i < accessible_address_count; i++) {
-        // check if the address is already there;
-        if (accessible_address[i]->address == rx_params->address_buffer) {
-          if (rx_params->data_buffer < accessible_address[i]->nodes_number) {
-            accessible_address[i]->nodes_number = rx_params->data_buffer;
-            accessible_address[i]->pin = rx_params->pin;
-          }
-          wrote = 1;
-          break;
-        }
-      }
-
-      if (wrote == 0) {
-        for (uint8_t i = 0; i < accessible_address_count; i++) {
-          // check if there is any free spot in the array;
-          if (read_gpiob_level(accessible_address[i]->pin) == 0) {
-            accessible_address[i]->pin = rx_params->pin;
-            accessible_address[i]->nodes_number = rx_params->data_buffer;
-            accessible_address[i]->address = rx_params->data_buffer;
-            wrote = 1;
-            break;
-          }
-        }
-      }
-
-      if (wrote == 0) {
-        for (uint8_t i = 0; i < accessible_address_count; i++) {
-
-          if (accessible_address[i]->address == 0 &&
-              accessible_address[i]->pin == 0 &&
-              accessible_address[i]->nodes_number == 0) {
-            accessible_address[i]->pin = rx_params->pin;
-            accessible_address[i]->nodes_number = rx_params->data_buffer;
-            accessible_address[i]->address = rx_params->data_buffer;
-            wrote = 1;
-            break;
-          }
-        }
-      }
-
-      if (wrote == 1) {
-        for (uint8_t i = 0; i < accessible_address_count; i++) {
-          if ((accessible_address[i]->address == rx_params->address_buffer) &&
-              (rx_params->data_buffer != accessible_address[i]->nodes_number)) {
-            accessible_address[i]->address = 0;
-            accessible_address[i]->nodes_number = 0;
-            accessible_address[i]->pin = 0;
-          }
-        }
-      }
-
-      if (rx_params->address_buffer == target_address) {
-        // assign this line and stop the loop
-      } else {
-        for (uint8_t i = 0; i < 4; i++) {
-          lines[i]->params_tx->s_mode = TARGET_EXISTS;
-          lines[i]->params_tx->s = SENDING_MODE;
-          lines[i]->params_tx->address_buffer = rx_params->address_buffer;
-          lines[i]->params_tx->data_buffer =
-              accessible_address[i]->nodes_number + 1;
-        }
-      }
-
-      break;
-
-    default:
-      break;
-    }
-    rx_params->finished_reading_address = 0;
-  }
-
-  if (rx_params->finished_reading_data == 1) {
-    switch (rx_params->mode) {
-    case SEARCHING:
-      break;
-
-    case DATA_TRANSIT:
-
-      break;
-
-    case DATA_RECIVED:
-
-        // insert_accessible_address(rx_params->pin, uint8_t nodes_number, uint8_t address); holy shiiit
       if (rx_params->address_buffer == my_address) {
         // register the in; i don t know what i am sayin but you understand what
         // I meant;
@@ -243,8 +141,8 @@ void Communication_handler(void *params) {
             tx_params->s_mode = DATA_RECIVED;
             tx_params->address_buffer = rx_params->address_buffer;
             tx_params->data_buffer = rx_params->data_buffer;
-
-            params_list->writing_func((void *) tx_params);
+                
+            params_list->writing_func((void *)tx_params);
             break;
           }
         }

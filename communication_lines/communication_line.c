@@ -13,7 +13,7 @@ extern void reset_pin_a(uint8_t pin);
 extern void set_pin_a(uint8_t pin);
 
 communication_line_t **lines;
-accessible_address_t** accessible_address;
+accessible_address_t **accessible_address;
 uint8_t accessible_address_count;
 
 void Communication_Line1_Read(void *params)
@@ -98,7 +98,7 @@ communication_line_t *create_line(uint8_t i) {
     line->writing_func = Communication_Line4_Write;
     break;
   }
-  
+
   line->communication_thread = thread;
   line->params_rx = params_rx;
   line->params_tx = params_tx;
@@ -108,9 +108,10 @@ communication_line_t *create_line(uint8_t i) {
 
 void Init_Communication_Lines(void) {
   lines = allocate_dumb(&my_heap, sizeof(communication_line_t *) * 4);
-  accessible_address = allocate_dumb(&my_heap, sizeof(accessible_address_t *)*16);
+  accessible_address =
+      allocate_dumb(&my_heap, sizeof(accessible_address_t *) * 16);
   accessible_address_count = 0;
-  
+
   communication_line_t *l;
 
   for (int i = 1; i <= 4; i++) {
@@ -125,9 +126,9 @@ void Init_Communication_Lines(void) {
 }
 
 int check_the_bite(communication_line_rx_param_t *params_list) {
-    if(params_list->recieved_bits == 0){
-        return 1;
-    }
+  if (params_list->recieved_bits == 0) {
+    return 1;
+  }
   switch (params_list->r) {
   case READING_MODE:
     if (params_list->recieved_bits == 1) {
@@ -135,11 +136,11 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
       params_list->finished_reading_mode = 1;
-      
+
       if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
           (((params_list->mode_buffer) & (1 << 1)) != 0)) {
         params_list->mode = DATA_RECIVED;
-        params_list->r = READING_BYTE;
+        params_list->r = READING_ADDRESS;
       } else if ((((params_list->mode_buffer) & (1 << 0)) != 0) &&
                  (((params_list->mode_buffer) & (1 << 1)) == 0)) {
         params_list->mode = DATA_TRANSIT;
@@ -161,19 +162,44 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
       params_list->finished_reading_address = 1;
-      
+
+      switch (params_list->mode) {
+      case DATA_TRANSIT:
+        params_list->r = READING_ADDRESS2;
+        break;
+
+      case SEARCHING:
+        params_list->r = READING_ADDRESS2;
+        break;
+
+      case TARGET_EXISTS:
+        params_list->r = READING_ADDRESS2;
+        break;
+      default:
+        params_list->r = READING_ADDRESS2;
+        break;
+      }
+    }
+    break;
+  case READING_ADDRESS2:
+    if (params_list->recieved_bits == 7) {
+      params_list->address_buffer = params_list->scratch_buffer;
+      params_list->last_falling_edge = -1;
+      params_list->recieved_bits = 0;
+      params_list->finished_reading_address = 1;
+
       switch (params_list->mode) {
       case DATA_TRANSIT:
         params_list->r = READING_BYTE;
         break;
 
       case SEARCHING:
-          params_list->r = READING_MODE;
-          break;
-        
+        params_list->r = READING_BYTE;
+        break;
+
       case TARGET_EXISTS:
-          params_list->r = READING_BYTE;
-          break;
+        params_list->r = READING_BYTE;
+        break;
       default:
         params_list->r = READING_MODE;
         break;
@@ -186,7 +212,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
       params_list->finished_reading_data = 1;
-      
+
       params_list->r = READING_MODE;
     }
     break;
@@ -212,19 +238,18 @@ void Communication_Line_Default_Read(void *params) {
       uint8_t bits_count = timer_ticks - params_list->last_rising_edge;
 
       for (uint8_t i = 0; i < bits_count; i++) {
-        params_list->scratch_buffer =
-            (params_list->scratch_buffer << 1) | (1);
+        params_list->scratch_buffer = (params_list->scratch_buffer << 1) | (1);
 
-          if (check_the_bite(params_list) == 0) {
-            params_list->last_edge = UNKOWN;
-            params_list->scratch_buffer = 0;
-            params_list->last_falling_edge = -1;
-            break;
-          } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = FAILING;
-            params_list->last_falling_edge = timer_ticks;
-          }
+        if (check_the_bite(params_list) == 0) {
+          params_list->last_edge = UNKOWN;
+          params_list->scratch_buffer = 0;
+          params_list->last_falling_edge = -1;
+          break;
+        } else {
+          params_list->recieved_bits++;
+          params_list->last_edge = FAILING;
+          params_list->last_falling_edge = timer_ticks;
+        }
       }
       break;
 
@@ -251,19 +276,17 @@ void Communication_Line_Default_Read(void *params) {
       uint8_t bits_count = timer_ticks - params_list->last_falling_edge;
 
       for (uint8_t i = 0; i < bits_count; i++) {
-          params_list->scratch_buffer =
-              (params_list->scratch_buffer << 1) & ~(1);
+        params_list->scratch_buffer = (params_list->scratch_buffer << 1) & ~(1);
 
-          if (check_the_bite(params_list) == 0) {
-            params_list->last_edge = UNKOWN;
-            params_list->scratch_buffer = 0;
-            params_list->last_falling_edge = -1;
-            break;
-          } else {
-            params_list->recieved_bits++;
-            params_list->last_edge = RISING;
-          }
-
+        if (check_the_bite(params_list) == 0) {
+          params_list->last_edge = UNKOWN;
+          params_list->scratch_buffer = 0;
+          params_list->last_falling_edge = -1;
+          break;
+        } else {
+          params_list->recieved_bits++;
+          params_list->last_edge = RISING;
+        }
       }
       break;
 
@@ -278,15 +301,15 @@ void Communication_Line_Default_Read(void *params) {
         for (uint8_t i = 0; i < bits_count; i++) {
           params_list->scratch_buffer =
               (params_list->scratch_buffer << 1) & ~(1);
-            if (check_the_bite(params_list) != 0) {
-              params_list->last_edge = UNKOWN;
-              params_list->last_falling_edge = -1;
-              break;
-            } else {
-              params_list->recieved_bits++;
-              params_list->last_edge = RISING;
-              params_list->last_rising_edge = timer_ticks;
-            }
+          if (check_the_bite(params_list) != 0) {
+            params_list->last_edge = UNKOWN;
+            params_list->last_falling_edge = -1;
+            break;
+          } else {
+            params_list->recieved_bits++;
+            params_list->last_edge = RISING;
+            params_list->last_rising_edge = timer_ticks;
+          }
         }
       }
       break;
@@ -373,7 +396,7 @@ void Communication_Line_Default_Write(void *params) {
             break;
 
           case DATA_RECIVED:
-            param_list->s = SENDING_BYTE;
+            param_list->s = SENDING_ADDRESS;
             set_pin_a(param_list->pin);
             break;
 
@@ -402,7 +425,7 @@ void Communication_Line_Default_Write(void *params) {
     }
 
     while (param_list->sent_bits <= 1) {
-      if (timer_ticks != param_list->last_write_tick) {          
+      if (timer_ticks != param_list->last_write_tick) {
         set_pin_a(param_list->pin);
         param_list->sent_bits++;
         param_list->last_write_tick = timer_ticks;
@@ -416,13 +439,13 @@ void Communication_Line_Default_Write(void *params) {
 
   case SENDING_ADDRESS:
 
-      while (param_list->sent_bits <= 0) {
-        if (timer_ticks != param_list->last_write_tick) {            
-          reset_pin_a(param_list->pin);
-          param_list->sent_bits++;
-          param_list->last_write_tick = timer_ticks;
-        }
+    while (param_list->sent_bits <= 0) {
+      if (timer_ticks != param_list->last_write_tick) {
+        reset_pin_a(param_list->pin);
+        param_list->sent_bits++;
+        param_list->last_write_tick = timer_ticks;
       }
+    }
 
     while (1) {
       if (param_list->last_write_tick != timer_ticks) {
@@ -438,13 +461,83 @@ void Communication_Line_Default_Write(void *params) {
             reset_pin_a(param_list->pin);
           }
           if (param_list->sent_bits == 8) {
-              while (1) {
-                if (param_list->last_write_tick != timer_ticks) {
-                  reset_pin_a(param_list->pin);
-                  param_list->last_write_tick = timer_ticks;
-                  break;
-                }
+            while (1) {
+              if (param_list->last_write_tick != timer_ticks) {
+                reset_pin_a(param_list->pin);
+                param_list->last_write_tick = timer_ticks;
+                break;
               }
+            }
+
+            switch (param_list->s_mode) {
+            case SEARCHING:
+              param_list->s = SENDING_ADDRESS2;
+              break;
+            case DATA_TRANSIT:
+              param_list->s = SENDING_ADDRESS2;
+
+              break;
+            case TARGET_EXISTS:
+              param_list->s = SENDING_ADDRESS2;
+              break;
+            default:
+              break;
+            }
+            break;
+          }
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
+      }
+    }
+
+    param_list->sent_bits = 0;
+    if (param_list->s == SENDING_ADDRESS2) {
+      while (param_list->sent_bits <= 1) {
+        if (timer_ticks != param_list->last_write_tick) {
+          set_pin_a(param_list->pin);
+          param_list->sent_bits++;
+          param_list->last_write_tick = timer_ticks;
+        }
+      }
+      param_list->sent_bits = 0;
+
+      lines[param_list->pin - 1]->writing_func((void *)param_list);
+    }
+
+    break;
+
+  case SENDING_ADDRESS2:
+
+    while (param_list->sent_bits <= 0) {
+      if (timer_ticks != param_list->last_write_tick) {
+        reset_pin_a(param_list->pin);
+        param_list->sent_bits++;
+        param_list->last_write_tick = timer_ticks;
+      }
+    }
+
+    while (1) {
+      if (param_list->last_write_tick != timer_ticks) {
+        if (param_list->sent_bits <= 8) {
+          uint8_t bit_to_write = (((param_list->address_buffer) &
+                                   (1 << param_list->sent_bits)) == 0)
+                                     ? 0
+                                     : 1;
+
+          if (bit_to_write == 1) {
+            set_pin_a(param_list->pin);
+          } else if (bit_to_write == 0) {
+            reset_pin_a(param_list->pin);
+          }
+          if (param_list->sent_bits == 8) {
+            while (1) {
+              if (param_list->last_write_tick != timer_ticks) {
+                reset_pin_a(param_list->pin);
+                param_list->last_write_tick = timer_ticks;
+                break;
+              }
+            }
 
             switch (param_list->s_mode) {
             case SEARCHING:
@@ -457,6 +550,7 @@ void Communication_Line_Default_Write(void *params) {
             case TARGET_EXISTS:
               param_list->s = SENDING_BYTE;
               break;
+
             default:
               break;
             }
@@ -467,7 +561,7 @@ void Communication_Line_Default_Write(void *params) {
         }
       }
     }
-    
+
     param_list->sent_bits = 0;
     if (param_list->s == SENDING_BYTE) {
       while (param_list->sent_bits <= 1) {
@@ -478,19 +572,20 @@ void Communication_Line_Default_Write(void *params) {
         }
       }
       param_list->sent_bits = 0;
-      
+
       lines[param_list->pin - 1]->writing_func((void *)param_list);
     }
- 
+
     break;
+
   case SENDING_BYTE:
-      while (param_list->sent_bits <= 0) {
-        if (timer_ticks != param_list->last_write_tick) {            
-          reset_pin_a(param_list->pin);
-          param_list->sent_bits++;
-          param_list->last_write_tick = timer_ticks;
-        }
+    while (param_list->sent_bits <= 0) {
+      if (timer_ticks != param_list->last_write_tick) {
+        reset_pin_a(param_list->pin);
+        param_list->sent_bits++;
+        param_list->last_write_tick = timer_ticks;
       }
+    }
 
     while (1) {
       if (param_list->last_write_tick != timer_ticks) {
@@ -519,7 +614,7 @@ void Communication_Line_Default_Write(void *params) {
               }
             }
             param_list->sent_bits = 0;
-            
+
             break;
           }
           param_list->sent_bits++;

@@ -19,12 +19,14 @@ typedef enum {
 typedef enum{
     READING_MODE,
     READING_ADDRESS,
+    READING_ADDRESS2,
     READING_BYTE
 } reading_t;
 
 typedef enum{
     SENDING_MODE,
     SENDING_ADDRESS,
+    SENDING_ADDRESS2,
     SENDING_BYTE
 } sending_t;
 
@@ -39,6 +41,9 @@ typedef struct {
   
   uint8_t address_buffer;
   uint8_t finished_reading_address;
+
+  uint8_t address2_buffer;
+  uint8_t finished_reading_address2;
   
   uint8_t pin;
   uint8_t recieved_bits;
@@ -54,6 +59,7 @@ typedef struct {
 typedef struct {
   uint8_t data_buffer;
   uint8_t address_buffer;
+  uint8_t address2_buffer;  
   uint8_t pin;
   uint8_t sent_bits;
   int32_t last_write_tick;
