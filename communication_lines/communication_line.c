@@ -186,7 +186,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       params_list->address_buffer = params_list->scratch_buffer;
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
-      params_list->finished_reading_address = 1;
+      params_list->finished_reading_address2 = 1;
 
       switch (params_list->mode) {
       case DATA_TRANSIT:
@@ -200,6 +200,11 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
       case TARGET_EXISTS:
         params_list->r = READING_BYTE;
         break;
+
+      case DATA_RECIVED:
+        params_list->r = READING_MODE;
+        break;
+
       default:
         params_list->r = READING_MODE;
         break;
@@ -473,13 +478,19 @@ void Communication_Line_Default_Write(void *params) {
             case SEARCHING:
               param_list->s = SENDING_ADDRESS2;
               break;
+
             case DATA_TRANSIT:
               param_list->s = SENDING_ADDRESS2;
-
               break;
+
             case TARGET_EXISTS:
               param_list->s = SENDING_ADDRESS2;
               break;
+
+            case DATA_RECIVED:
+              param_list->s = SENDING_ADDRESS2;
+              break;
+
             default:
               break;
             }
@@ -541,14 +552,19 @@ void Communication_Line_Default_Write(void *params) {
 
             switch (param_list->s_mode) {
             case SEARCHING:
-              param_list->s = SENDING_MODE;
+              param_list->s = SENDING_BYTE;
               break;
+
             case DATA_TRANSIT:
               param_list->s = SENDING_BYTE;
 
               break;
             case TARGET_EXISTS:
               param_list->s = SENDING_BYTE;
+              break;
+
+            case DATA_RECIVED:
+              param_list->s = SENDING_MODE;
               break;
 
             default:

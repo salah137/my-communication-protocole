@@ -1,4 +1,5 @@
 #include "communication_lines/communication_line.h"
+#include <cstdint>
 #include <stdint.h>
 
 #define my_address 0x43
@@ -74,77 +75,148 @@ void insert_accessible_address(uint8_t pin, uint8_t nodes_number,
   }
 }
 
+int8_t search_for_node(uint8_t address) {
+  int8_t smallest_path = -1;
+
+  for (uint8_t i = 0; i < accessible_address_count; i++) {
+    if (accessible_address[i]->address == my_address) {
+      if (smallest_path != -1 &&
+          accessible_address[smallest_path]->nodes_number >
+              accessible_address[i]->nodes_number) {
+        smallest_path = i;
+      }
+    }
+  }
+
+  return smallest_path;
+}
+
 void Communication_handler(void *params) {
   communication_line_t *params_list = (communication_line_t *)params;
   communication_line_rx_param_t *rx_params = params_list->params_rx;
   communication_line_tx_param_t *tx_params = params_list->params_tx;
 
+  if (rx_params->finished_reading_address2 == 1) {
+    if (rx_params->mode == DATA_RECIVED) {
+      if (rx_params->address2_buffer == my_address) {
+        // do something; TODO: make the firemware knows about the handshake
+      } else {
+        int8_t smallest_path = search_for_node(rx_params->address2_buffer);
+        if (smallest_path != -1) {
+          lines[accessible_address[smallest_path]->pin - 1]
+              ->params_tx->address_buffer = rx_params->address_buffer;
+          lines[accessible_address[smallest_path]->pin - 1]
+              ->params_tx->address2_buffer = rx_params->address2_buffer;
+          lines[accessible_address[smallest_path]->pin - 1]->params_tx->s =
+              SENDING_MODE;
+          lines[accessible_address[smallest_path]->pin - 1]->params_tx->s_mode =
+              DATA_RECIVED;
+
+          lines[accessible_address[smallest_path]->pin - 1]->writing_func(
+              (void *)lines[accessible_address[smallest_path]->pin - 1]
+                  ->params_tx);
+        } else {
+          // do something; TODO: raise an exeption or something;
+        }
+      }
+    }
+    rx_params->finished_reading_address2 = 0;
+  }
+
   if (rx_params->finished_reading_data == 1) {
     switch (rx_params->mode) {
     case SEARCHING:
 
-      insert_accessible_address(rx_params->pin, 0, rx_params->data_buffer);
+      insert_accessible_address(rx_params->pin, rx_params->data_buffer,
+                                rx_params->address2_buffer);
 
-      if (rx_params->address_buffer == my_address) {
-        tx_params->address_buffer = my_address;
+      if (rx_params->address2_buffer == my_address) {
+        tx_params->address2_buffer = my_address;
+        tx_params->address_buffer = rx_params->address_buffer;
         tx_params->data_buffer = 0b00000000;
         tx_params->s_mode = TARGET_EXISTS;
         params_list->writing_func((void *)tx_params);
       } else {
+        int8_t searching_node = search_for_node(rx_params->address2_buffer);
+        int8_t sender_node = search_for_node(rx_params->address_buffer);
 
-        int8_t smallest_path = -1;
-        // check if the target is already registred
-        for (uint8_t i = 0; i < accessible_address_count; i++) {
-          if (accessible_address[i]->address == my_address &&
-              (read_gpiob_level(accessible_address[i]->pin) != 0) &&
-              ((accessible_address[i]->nodes_number < smallest_path) ||
-               (smallest_path == -1))) {
-            smallest_path = accessible_address[i]->nodes_number;
+        if (searching_node != -1 &&
+            read_gpiob_level(accessible_address[searching_node]->pin) != 0) {
+          if (sender_node != -1) {
+            lines[accessible_address[sender_node]->pin - 1]
+                ->params_tx->address_buffer = rx_params->address_buffer;
+
+            lines[accessible_address[sender_node]->pin - 1]
+                ->params_tx->address2_buffer = rx_params->address2_buffer;
+
+            lines[accessible_address[sender_node]->pin - 1]
+                ->params_tx->data_buffer =
+                accessible_address[searching_node]->nodes_number;
+
+            lines[accessible_address[sender_node]->pin - 1]->params_tx->s_mode =
+                TARGET_EXISTS;
+
+            lines[accessible_address[sender_node]->pin - 1]->params_tx->s =
+                SENDING_MODE;
+
+            lines[accessible_address[sender_node]->pin - 1]->writing_func(
+                (void *)lines[accessible_address[sender_node]->pin - 1]
+                    ->params_tx);
+
+          } else {
+            tx_params->address_buffer = rx_params->address_buffer;
+            tx_params->address2_buffer = rx_params->address2_buffer;
+            tx_params->data_buffer =
+                accessible_address[searching_node]->nodes_number;
+            tx_params->s_mode = TARGET_EXISTS;
+            tx_params->s = SENDING_MODE;
+
+            params_list->writing_func((void *)tx_params);
           }
-        }
-
-        if (smallest_path == -1) {
-          // broadcast the searching to other nodes
+        } else {
           for (uint8_t i = 0; i < 4; i++) {
-            lines[i]->params_tx->s = SENDING_MODE;
-            lines[i]->params_tx->s_mode = SEARCHING;
             lines[i]->params_tx->address_buffer = rx_params->address_buffer;
+            lines[i]->params_tx->address2_buffer = rx_params->address2_buffer;
+            lines[i]->params_tx->data_buffer = rx_params->data_buffer + 1;
+            lines[i]->params_tx->s_mode = SEARCHING;
+            lines[i]->params_tx->s = SENDING_MODE;
 
             lines[i]->writing_func((void *)lines[i]->params_tx);
           }
-        } else {
-          // broadcast back;
-          lines[tx_params->pin - 1]->params_tx->s = SENDING_MODE;
-          lines[tx_params->pin - 1]->params_tx->s_mode = SEARCHING;
-          lines[tx_params->pin - 1]->params_tx->address_buffer =
-              rx_params->address_buffer;
-          lines[tx_params->pin - 1]->params_tx->data_buffer = smallest_path;
         }
       }
       break;
 
     case DATA_TRANSIT:
+      if (rx_params->address2_buffer == my_address) {
+        tx_params->address_buffer = rx_params->address2_buffer;
+        tx_params->address2_buffer = my_address;
 
-      break;
+        tx_params->s_mode = DATA_RECIVED;
+        tx_params->s = SENDING_MODE;
 
-    case DATA_RECIVED:
-
-      // insert_accessible_address(rx_params->pin, uint8_t nodes_number, uint8_t
-      // address); holy shiiit
-
-      if (rx_params->address_buffer == my_address) {
-        // register the in; i don t know what i am sayin but you understand what
-        // I meant;
+        params_list->writing_func((void *)tx_params);
+        // TODO : fire the software interrupt
       } else {
-        for (uint8_t i = 0; i < accessible_address_count; i++) {
-          if (accessible_address[i]->address == rx_params->address_buffer) {
-            tx_params->s_mode = DATA_RECIVED;
-            tx_params->address_buffer = rx_params->address_buffer;
-            tx_params->data_buffer = rx_params->data_buffer;
-                
-            params_list->writing_func((void *)tx_params);
-            break;
-          }
+        // PASS THE DATA TO THE NEXT NODE
+        int8_t searching_for_node = search_for_node(rx_params->address2_buffer);
+        if (searching_for_node != -1) {
+          lines[accessible_address[searching_for_node]->pin - 1]
+              ->params_tx->address_buffer = rx_params->address_buffer;
+          lines[accessible_address[searching_for_node]->pin - 1]
+              ->params_tx->address2_buffer = rx_params->address2_buffer;
+          lines[accessible_address[searching_for_node]->pin - 1]
+              ->params_tx->data_buffer = rx_params->data_buffer;
+          lines[accessible_address[searching_for_node]->pin - 1]
+              ->params_tx->s_mode = DATA_TRANSIT;
+          lines[accessible_address[searching_for_node]->pin - 1]->params_tx->s =
+              SENDING_MODE;
+
+          lines[accessible_address[searching_for_node]->pin - 1]->writing_func(
+              (void *)lines[accessible_address[searching_for_node]->pin - 1]
+                  ->params_tx);
+        } else {
+          // TODO : RAISE an EXEPTION
         }
       }
 
@@ -152,19 +224,32 @@ void Communication_handler(void *params) {
 
     case TARGET_EXISTS:
       insert_accessible_address(rx_params->pin, rx_params->data_buffer,
-                                rx_params->address_buffer);
+                                rx_params->address2_buffer);
 
       if (rx_params->address_buffer == target_address) {
-        // assign this line and stop the loop
+        // TODO : assign this line and stop the loop
+
       } else {
-        for (uint8_t i = 0; i < 4; i++) {
-          lines[i]->params_tx->s_mode = TARGET_EXISTS;
-          lines[i]->params_tx->s = SENDING_MODE;
-          lines[i]->params_tx->address_buffer = rx_params->address_buffer;
-          lines[i]->params_tx->data_buffer =
-              accessible_address[i]->nodes_number + 1;
+        int8_t target_node = search_for_node(rx_params->address2_buffer);
+        if (target_node != -1) {
+          lines[accessible_address[target_node]->pin - 1]
+              ->params_tx->address_buffer = rx_params->address_buffer;
+          lines[accessible_address[target_node]->pin - 1]
+              ->params_tx->address2_buffer = rx_params->address2_buffer;
+          lines[accessible_address[target_node]->pin - 1]
+              ->params_tx->data_buffer = rx_params->data_buffer + 1;
+          lines[accessible_address[target_node]->pin - 1]->params_tx->s_mode =
+              TARGET_EXISTS;
+
+          lines[accessible_address[target_node]->pin - 1]->params_tx->s =
+              SENDING_MODE;
+          lines[accessible_address[target_node]->pin - 1]->writing_func(
+              (void *)lines[accessible_address[target_node]->pin - 1]
+                  ->params_tx);
+        }  else {
+            //TODO: raise exeption
         }
-      }
+      } 
 
       break;
 
