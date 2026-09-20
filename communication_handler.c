@@ -1,4 +1,4 @@
-#include "../communication_lines/communication_line.h"
+#include "communication_lines/communication_line.h"
 #include <stdint.h>
 
 #define my_address 0x43
