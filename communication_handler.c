@@ -1,5 +1,6 @@
 #include "communication_lines/communication_line.h"
 #include <stdint.h>
+#include "tasks/tasks.h"
 
 #define my_address 0x43
 #define target_address 0x23
@@ -94,6 +95,14 @@ void Communication_handler(void *params) {
   communication_line_rx_param_t *rx_params = params_list->params_rx;
   communication_line_tx_param_t *tx_params = params_list->params_tx;
 
+  if(rx_params->finished_reading_mode == 1){
+      rx_params->finished_reading_mode = 0;
+  }
+  
+  if(rx_params->finished_reading_address == 1){
+      rx_params->finished_reading_address = 0;
+  }
+  
   if (rx_params->finished_reading_address2 == 1) {
     if (rx_params->mode == DATA_RECIVED) {
       if (rx_params->address2_buffer == my_address) {
@@ -257,4 +266,7 @@ void Communication_handler(void *params) {
 
     rx_params->finished_reading_data = 0;
   }
+
+  return;
 }
+

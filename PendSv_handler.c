@@ -15,8 +15,8 @@ void Fire_PendSv(void){
     SCB_ICSR = ICSR_PENDSVSET_BIT;
 }
 
-// r2 holds the stack pointer for the wanted thread
-// r1 holds the stack pointer for the old thread
+// r2 holds the pointer for the wanted thread
+// r1 holds the pointer for the old thread
 __attribute__((naked)) void PendSv_handler(void) {
     __asm__ volatile(
         "cspsid i                               \n\t"

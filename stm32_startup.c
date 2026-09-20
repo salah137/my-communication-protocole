@@ -134,6 +134,7 @@ void Reset_Handler(void) {
   
   Systick_Init();
   PendSV_Init();
+  
 }
 
 __attribute__((naked)) void SVC_Handler(void){

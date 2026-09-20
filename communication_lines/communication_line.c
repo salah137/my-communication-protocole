@@ -11,10 +11,13 @@ extern uint8_t read_gpiob_level(uint8_t pin);
 extern volatile uint32_t timer_ticks;
 extern void reset_pin_a(uint8_t pin);
 extern void set_pin_a(uint8_t pin);
-
+extern void Communication_handler(void *params);
+extern void Fire_PendSv(void);
 communication_line_t **lines;
 accessible_address_t **accessible_address;
 uint8_t accessible_address_count;
+thread_t* handler_thread;
+handler_params_t* handler_params;
 
 void Communication_Line1_Read(void *params)
     __attribute((weak, alias("Communication_Line_Default_Read")));
@@ -123,6 +126,10 @@ void Init_Communication_Lines(void) {
       lines[i - 1] = l;
     }
   }
+
+  handler_params = allocate_dumb(&my_heap, sizeof(handler_params_t));
+  handler_thread = create_thread("communication_handler", Communication_handler, 256, (void *) handler_params, 0);
+
 }
 
 int check_the_bite(communication_line_rx_param_t *params_list) {
@@ -323,6 +330,15 @@ void Communication_Line_Default_Read(void *params) {
     params_list->last_rising_edge = timer_ticks;
   }
 
+  handler_params->line = lines[params_list->pin -1];
+
+  uint32_t* handler_thread_pointer = (uint32_t*) handler_thread;
+  
+  __asm__ volatile (
+      "ldr r2,[%0]      \n\t"
+      : : "r" (handler_thread_pointer) : "memory"
+  );
+  
   return;
 }
 

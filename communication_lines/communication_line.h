@@ -80,3 +80,6 @@ typedef struct {
   void (*writing_func)(void *);
 } communication_line_t;
 
+typedef struct {
+    communication_line_t* line;
+} handler_params_t;
