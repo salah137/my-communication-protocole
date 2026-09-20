@@ -1,5 +1,4 @@
-#include "communication_lines/communication_line.h"
-#include <cstdint>
+#include "../communication_lines/communication_line.h"
 #include <stdint.h>
 
 #define my_address 0x43
@@ -55,9 +54,9 @@ void insert_accessible_address(uint8_t pin, uint8_t nodes_number,
 
     if (wrote == 0) {
       if (accessible_address_count < 15) {
-        accessible_address[++accessible_address_count]->address = address;
+        accessible_address[accessible_address_count]->address = address;
         accessible_address[accessible_address_count]->pin = pin;
-        accessible_address[accessible_address_count]->nodes_number =
+        accessible_address[accessible_address_count++]->nodes_number =
             nodes_number;
       }
     }
@@ -79,12 +78,11 @@ int8_t search_for_node(uint8_t address) {
   int8_t smallest_path = -1;
 
   for (uint8_t i = 0; i < accessible_address_count; i++) {
-    if (accessible_address[i]->address == my_address) {
-      if (smallest_path != -1 &&
-          accessible_address[smallest_path]->nodes_number >
-              accessible_address[i]->nodes_number) {
-        smallest_path = i;
-      }
+    if (accessible_address[i]->address == address) {
+        if (smallest_path == -1 ||
+            accessible_address[i]->nodes_number < accessible_address[smallest_path]->nodes_number) {
+          smallest_path = i;
+        }    
     }
   }
 
