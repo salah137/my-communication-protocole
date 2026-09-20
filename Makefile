@@ -11,30 +11,34 @@ BOARD ?= stm32vldiscovery
 PORT ?= 1234
 
 PROJECT = mesh
+OBJ_DIR = o_files
 
-.PHONY = qemu gdb
+# 1. Find all .c files recursively, excluding the o_files directory, and strip leading ./
+C_FILES := $(shell find . -name "*.c" -not -path "./$(OBJ_DIR)/*" | sed 's|^\./||')
 
-o_files/stm32_startup.o : stm32_startup.c 
-	$(CC) $(FLAGS) -o $@ $^  
+# 2. Map source files to corresponding object files inside o_files/
+OBJS := $(C_FILES:%.c=$(OBJ_DIR)/%.o)
 
-o_files/main.o : main.c 
-	$(CC) $(FLAGS) -o $@ $^  
+.PHONY: all qemu gdb clean
 
-o_files/gpio_driver.o : gpio_driver.c  
-	$(CC) $(FLAGS) -o $@ $^  
+all: $(PROJECT).elf
 
-$(PROJECT).elf : o_files/stm32_startup.o o_files/main.o o_files/gpio_driver
-	$(LD) $(LDFLAGS2) -o $@ $^  
+# 3. Pattern rule to compile any .c file into its mirrored .o path, creating subdirs automatically
+$(OBJ_DIR)/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(FLAGS) -c $< -o $@
 
+# 4. Link all automatically gathered object files into the final ELF
+$(PROJECT).elf: $(OBJS)
+	$(LD) $(LDFLAGS2) -o $@ $^
 
 qemu: $(PROJECT).elf
 	arm-none-eabi-objdump -D -S $(PROJECT).elf > $(PROJECT).elf.lst
 	arm-none-eabi-readelf -a $(PROJECT).elf > $(PROJECT).elf.debug
 	qemu-system-arm -S -M $(BOARD) -cpu $(CPU) -nographic -kernel $(PROJECT).elf -gdb tcp::$(PORT)
-	
 
 gdb: $(PROJECT).elf
 	$(GDB) -q $(PROJECT).elf -ex "target remote localhost:$(PORT)"
 
 clean:
-	rm -f *.o *.elf *.map *.lst *.debug o_files/*.o
+	rm -rf $(OBJ_DIR) $(PROJECT).elf *.map *.lst *.debug

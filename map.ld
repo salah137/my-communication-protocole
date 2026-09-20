@@ -2,7 +2,7 @@ ENTRY(Reset_Handler)
 
 MEMORY {
     FLASH (rw) : ORIGIN = 0x08000000, LENGTH = 128k
-    MEMORY (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
+    RAM (rwx) : ORIGIN = 0x20000000, LENGTH = 8K
     PERIPH (rw) : ORIGIN = 0x40000000, LENGTH = 512M
 }
 

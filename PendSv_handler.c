@@ -17,23 +17,23 @@ void Fire_PendSv(void){
 
 // r2 holds the pointer for the wanted thread
 // r1 holds the pointer for the old thread
-__attribute__((naked)) void PendSv_handler(void) {
+__attribute__((naked)) void PendSv_Handler(void) {
     __asm__ volatile(
-        "cspsid i                               \n\t"
-        "mrs psp,r0                             \n\t"
-        "cbz rO, 1f                             \n\t"
+        "cpsid i                               \n\t"
+        "mrs r0,psp                             \n\t"
+        "cbz r0, 1f                             \n\t"
         "stmdb r0!,{r4-r11}                     \n\t"   
 
         "ldr r1,=current_thread                 \n\t"
         "ldr r1,[r1]                            \n\t"
         "str r0,[r1,#8]                         \n\t"
 
-        "1f:"
+        "1:"
         "ldr r2,[r2]                            \n\t"
-        "ldr rO,[r2,#8]                         \n\t"
+        "ldr r0,[r2,#8]                         \n\t"
         
         "ldmia r0!,{r4-r11}                     \n\t"
-        "msr r0,psp                             \n\t"
+        "msr psp,r0                             \n\t"
 
         "ldr r1,=current_thread                 \n\t"
         "str r2,[r1]                            \n\t"

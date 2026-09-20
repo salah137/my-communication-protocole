@@ -33,6 +33,7 @@ extern void SysTick_Handler(void);
 extern void PendSV_Init(void);
 extern void PendSv_Handler(void);
 
+extern void Init_Communication_Lines(void);
 
 typedef struct {
   uint32_t CTRL;
@@ -97,7 +98,7 @@ __attribute__((section(".vector_table"))) const uint32_t vector_table[] = {
     (uint32_t)&Default_Handler, 
     (uint32_t)&Default_Handler, 
 
-    (uint32_t) &EXTI_5_9_IRQ_handler,
+    0,
 
     (uint32_t)&Default_Handler, 
     (uint32_t)&Default_Handler, 
@@ -115,7 +116,7 @@ __attribute__((section(".vector_table"))) const uint32_t vector_table[] = {
     (uint32_t)&Default_Handler, 
     (uint32_t)&Default_Handler, 
 
-    (uint32_t)&EXTI_10_15_IRQ_handler
+    0
 };
 
 void Reset_Handler(void) {
@@ -135,6 +136,13 @@ void Reset_Handler(void) {
   Systick_Init();
   PendSV_Init();
   
+  
+}
+
+void Default_Handler(){
+    while (1) {
+    
+    }
 }
 
 __attribute__((naked)) void SVC_Handler(void){

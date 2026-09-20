@@ -27,6 +27,5 @@ void Systick_Init(void) {
 }
 
 void SysTick_Handler(void){
-    timer_ticks++;
     return;
 }
