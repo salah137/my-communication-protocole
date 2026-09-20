@@ -13,11 +13,12 @@ extern void reset_pin_a(uint8_t pin);
 extern void set_pin_a(uint8_t pin);
 extern void Communication_handler(void *params);
 extern void Fire_PendSv(void);
+
 communication_line_t **lines;
 accessible_address_t **accessible_address;
 uint8_t accessible_address_count;
-thread_t* handler_thread;
-handler_params_t* handler_params;
+thread_t *handler_thread;
+handler_params_t *handler_params;
 
 void Communication_Line1_Read(void *params)
     __attribute((weak, alias("Communication_Line_Default_Read")));
@@ -128,8 +129,8 @@ void Init_Communication_Lines(void) {
   }
 
   handler_params = allocate_dumb(&my_heap, sizeof(handler_params_t));
-  handler_thread = create_thread("communication_handler", Communication_handler, 256, (void *) handler_params, 0);
-
+  handler_thread = create_thread("communication_handler", Communication_handler,
+                                 256, (void *)handler_params, 0);
 }
 
 int check_the_bite(communication_line_rx_param_t *params_list) {
@@ -238,108 +239,116 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
 }
 
 void Communication_Line_Default_Read(void *params) {
-  communication_line_rx_param_t *params_list =
-      (communication_line_rx_param_t *)params;
+  communication_line_rx_param_t *params_list;
+  while (1) {
+    params_list = (communication_line_rx_param_t *)params;
 
-  // falling edge
+    // falling edge
 
-  if (read_gpiob_level(params_list->pin) == 0) {
+    if (read_gpiob_level(params_list->pin) == 0) {
 
-    switch (params_list->last_edge) {
-    case RISING:
-      uint8_t bits_count = timer_ticks - params_list->last_rising_edge;
+      switch (params_list->last_edge) {
+      case RISING: {
+        uint8_t bits_count = timer_ticks - params_list->last_rising_edge;
 
-      for (uint8_t i = 0; i < bits_count; i++) {
-        params_list->scratch_buffer = (params_list->scratch_buffer << 1) | (1);
+        for (uint8_t i = 0; i < bits_count; i++) {
+          params_list->scratch_buffer =
+              (params_list->scratch_buffer << 1) | (1);
 
-        if (check_the_bite(params_list) == 0) {
-          params_list->last_edge = UNKOWN;
-          params_list->scratch_buffer = 0;
-          params_list->last_falling_edge = -1;
-          break;
-        } else {
-          params_list->recieved_bits++;
-          params_list->last_edge = FAILING;
+          if (check_the_bite(params_list) == 0) {
+            params_list->last_edge = UNKOWN;
+            params_list->scratch_buffer = 0;
+            params_list->last_falling_edge = -1;
+            break;
+          } else {
+            params_list->recieved_bits++;
+            params_list->last_edge = FAILING;
+            params_list->last_falling_edge = timer_ticks;
+          }
+        }
+        break;
+      }
+
+      case FAILING:
+        // impossible
+        break;
+
+      case UNKOWN: {
+        if (params_list->last_falling_edge == -1) {
           params_list->last_falling_edge = timer_ticks;
         }
+        break;
       }
-      break;
-
-    case FAILING:
-      // impossible
-      break;
-
-    case UNKOWN:
-      if (params_list->last_falling_edge == -1) {
-        params_list->last_falling_edge = timer_ticks;
       }
-      break;
-    }
 
-    // rising_edge
-  } else if (read_gpiob_level(params_list->pin) == 1) {
-    switch (params_list->last_edge) {
+      // rising_edge
+    } else if (read_gpiob_level(params_list->pin) == 1) {
+      switch (params_list->last_edge) {
 
-    case RISING:
-      // impossible
-      break;
+      case RISING:
+        // impossible
+        break;
 
-    case FAILING:
-      uint8_t bits_count = timer_ticks - params_list->last_falling_edge;
+      case FAILING: {
+        uint8_t bits_count = timer_ticks - params_list->last_falling_edge;
 
-      for (uint8_t i = 0; i < bits_count; i++) {
-        params_list->scratch_buffer = (params_list->scratch_buffer << 1) & ~(1);
-
-        if (check_the_bite(params_list) == 0) {
-          params_list->last_edge = UNKOWN;
-          params_list->scratch_buffer = 0;
-          params_list->last_falling_edge = -1;
-          break;
-        } else {
-          params_list->recieved_bits++;
-          params_list->last_edge = RISING;
-        }
-      }
-      break;
-
-    case UNKOWN:
-
-      if (params_list->last_falling_edge != -1) {
-        uint8_t bits_count = (timer_ticks - params_list->last_falling_edge) - 1;
-
-        if (bits_count == 0) {
-          params_list->last_edge = RISING;
-        }
         for (uint8_t i = 0; i < bits_count; i++) {
           params_list->scratch_buffer =
               (params_list->scratch_buffer << 1) & ~(1);
-          if (check_the_bite(params_list) != 0) {
+
+          if (check_the_bite(params_list) == 0) {
             params_list->last_edge = UNKOWN;
+            params_list->scratch_buffer = 0;
             params_list->last_falling_edge = -1;
             break;
           } else {
             params_list->recieved_bits++;
             params_list->last_edge = RISING;
-            params_list->last_rising_edge = timer_ticks;
           }
         }
+        break;
       }
-      break;
+
+      case UNKOWN: {
+        if (params_list->last_falling_edge != -1) {
+          uint8_t bits_count =
+              (timer_ticks - params_list->last_falling_edge) - 1;
+
+          if (bits_count == 0) {
+            params_list->last_edge = RISING;
+          }
+          for (uint8_t i = 0; i < bits_count; i++) {
+            params_list->scratch_buffer =
+                (params_list->scratch_buffer << 1) & ~(1);
+            if (check_the_bite(params_list) != 0) {
+              params_list->last_edge = UNKOWN;
+              params_list->last_falling_edge = -1;
+              break;
+            } else {
+              params_list->recieved_bits++;
+              params_list->last_edge = RISING;
+              params_list->last_rising_edge = timer_ticks;
+            }
+          }
+        }
+        break;
+      }
+      }
+
+      params_list->last_rising_edge = timer_ticks;
     }
 
-    params_list->last_rising_edge = timer_ticks;
+    handler_params->line = lines[params_list->pin - 1];
+
+    uint32_t *handler_thread_pointer = (uint32_t *)handler_thread;
+
+    __asm__ volatile("ldr r2,[%0]      \n\t"
+                     :
+                     : "r"(handler_thread_pointer)
+                     : "memory");
+
+    Fire_PendSv();
   }
-
-  handler_params->line = lines[params_list->pin -1];
-
-  uint32_t* handler_thread_pointer = (uint32_t*) handler_thread;
-  
-  __asm__ volatile (
-      "ldr r2,[%0]      \n\t"
-      : : "r" (handler_thread_pointer) : "memory"
-  );
-  
-  return;
 }
 
 void Communication_Line_Default_Write(void *params) {

@@ -1,6 +1,6 @@
 #include "communication_lines/communication_line.h"
-#include <stdint.h>
 #include "tasks/tasks.h"
+#include <stdint.h>
 
 #define my_address 0x43
 #define target_address 0x23
@@ -9,6 +9,7 @@ extern communication_line_t **lines;
 extern uint8_t read_gpiob_level(uint8_t pin);
 extern uint8_t accessible_address_count;
 extern accessible_address_t **accessible_address;
+extern machine_state_t *my_machine;
 
 void insert_accessible_address(uint8_t pin, uint8_t nodes_number,
                                uint8_t address) {
@@ -80,10 +81,11 @@ int8_t search_for_node(uint8_t address) {
 
   for (uint8_t i = 0; i < accessible_address_count; i++) {
     if (accessible_address[i]->address == address) {
-        if (smallest_path == -1 ||
-            accessible_address[i]->nodes_number < accessible_address[smallest_path]->nodes_number) {
-          smallest_path = i;
-        }    
+      if (smallest_path == -1 ||
+          accessible_address[i]->nodes_number <
+              accessible_address[smallest_path]->nodes_number) {
+        smallest_path = i;
+      }
     }
   }
 
@@ -95,18 +97,22 @@ void Communication_handler(void *params) {
   communication_line_rx_param_t *rx_params = params_list->params_rx;
   communication_line_tx_param_t *tx_params = params_list->params_tx;
 
-  if(rx_params->finished_reading_mode == 1){
-      rx_params->finished_reading_mode = 0;
+  if (rx_params->finished_reading_mode == 1) {
+    rx_params->finished_reading_mode = 0;
   }
-  
-  if(rx_params->finished_reading_address == 1){
-      rx_params->finished_reading_address = 0;
+
+  if (rx_params->finished_reading_address == 1) {
+    rx_params->finished_reading_address = 0;
   }
-  
+
   if (rx_params->finished_reading_address2 == 1) {
     if (rx_params->mode == DATA_RECIVED) {
-      if (rx_params->address2_buffer == my_address) {
-        // do something; TODO: make the firemware knows about the handshake
+      if (rx_params->address2_buffer == my_machine->machine_address) {
+        my_machine->data_handshake->address = rx_params->address_buffer;
+        my_machine->data_handshake->line = rx_params->pin;
+
+        rx_params->data_handshake_intr(rx_params->data_handshake_intr_params);
+
       } else {
         int8_t smallest_path = search_for_node(rx_params->address2_buffer);
         if (smallest_path != -1) {
@@ -134,10 +140,11 @@ void Communication_handler(void *params) {
     switch (rx_params->mode) {
     case SEARCHING:
 
+    {
       insert_accessible_address(rx_params->pin, rx_params->data_buffer,
                                 rx_params->address2_buffer);
 
-      if (rx_params->address2_buffer == my_address) {
+      if (rx_params->address2_buffer == my_machine->machine_address) {
         tx_params->address2_buffer = my_address;
         tx_params->address_buffer = rx_params->address_buffer;
         tx_params->data_buffer = 0b00000000;
@@ -193,9 +200,9 @@ void Communication_handler(void *params) {
         }
       }
       break;
-
-    case DATA_TRANSIT:
-      if (rx_params->address2_buffer == my_address) {
+    }
+    case DATA_TRANSIT: {
+      if (rx_params->address2_buffer == my_machine->machine_address) {
         tx_params->address_buffer = rx_params->address2_buffer;
         tx_params->address2_buffer = my_address;
 
@@ -203,7 +210,13 @@ void Communication_handler(void *params) {
         tx_params->s = SENDING_MODE;
 
         params_list->writing_func((void *)tx_params);
-        // TODO : fire the software interrupt
+
+        my_machine->recived_data->buffer = rx_params->data_buffer;
+        my_machine->recived_data->address = rx_params->address_buffer;
+        my_machine->recived_data->line = rx_params->pin;
+
+        rx_params->recived_data_intr(rx_params->recived_data_intr_params);
+
       } else {
         // PASS THE DATA TO THE NEXT NODE
         int8_t searching_for_node = search_for_node(rx_params->address2_buffer);
@@ -228,13 +241,17 @@ void Communication_handler(void *params) {
       }
 
       break;
-
-    case TARGET_EXISTS:
+    }
+    case TARGET_EXISTS: {
       insert_accessible_address(rx_params->pin, rx_params->data_buffer,
                                 rx_params->address2_buffer);
 
       if (rx_params->address_buffer == target_address) {
-        // TODO : assign this line and stop the loop
+
+        my_machine->existing_target->address = rx_params->address2_buffer;
+        my_machine->existing_target->line = rx_params->pin;
+        my_machine->existing_target->hoops_number = rx_params->data_buffer;
+        rx_params->existing_target_intr(rx_params->existing_target_intr_params);
 
       } else {
         int8_t target_node = search_for_node(rx_params->address2_buffer);
@@ -253,13 +270,13 @@ void Communication_handler(void *params) {
           lines[accessible_address[target_node]->pin - 1]->writing_func(
               (void *)lines[accessible_address[target_node]->pin - 1]
                   ->params_tx);
-        }  else {
-            //TODO: raise exeption
+        } else {
+          // TODO: raise exeption
         }
-      } 
+      }
 
       break;
-
+    }
     default:
       break;
     }
@@ -269,4 +286,3 @@ void Communication_handler(void *params) {
 
   return;
 }
-
