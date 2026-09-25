@@ -14,6 +14,7 @@ typedef struct {
 #define SysTick_CTRL_CLK_SOURCE (1UL << 2)
 #define CYCLES_PER_TICKS 500
 
+extern void Fire_PendSv(uint8_t from_isr);
 
 void Systick_Init(void) {
   systemt_t *SysTick = (systemt_t *)SysTick_BASE;
@@ -27,5 +28,6 @@ void Systick_Init(void) {
 }
 
 void SysTick_Handler(void){
+    Fire_PendSv(0);
     return;
 }

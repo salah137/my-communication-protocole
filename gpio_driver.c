@@ -96,5 +96,5 @@ void reset_pin_b(uint8_t pin) {
   if (pin > 15) {
     return;
   }
-  GPIOB_BSRR = (1UL << (pin + 15));
+  GPIOB_BSRR = (1UL << (pin + 16));
 }

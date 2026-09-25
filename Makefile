@@ -8,7 +8,8 @@ LDFLAGS = -T map.ld
 LDFLAGS2 = -nostdlib -T map.ld -Map=out.map
 
 BOARD ?= stm32vldiscovery
-PORT ?= 1234
+PORT_QEMU ?= 1234
+PORT_RENODE ?= 3333
 
 PROJECT = mesh
 OBJ_DIR = o_files
@@ -37,8 +38,13 @@ qemu: $(PROJECT).elf
 	arm-none-eabi-readelf -a $(PROJECT).elf > $(PROJECT).elf.debug
 	qemu-system-arm -S -M $(BOARD) -cpu $(CPU) -nographic -kernel $(PROJECT).elf -gdb tcp::$(PORT)
 
-gdb: $(PROJECT).elf
-	$(GDB) -q $(PROJECT).elf -ex "target remote localhost:$(PORT)"
+renode: $(PROJECT).elf
+	renode mesh.resc
+gdb_renode: $(PROJECT).elf
+	$(GDB) -q $(PROJECT).elf -ex "target remote localhost:$(PORT_RENODE)"
 
+gdb_qemu: $(PROJECT).elf 
+	$(GDB) -q $(PROJECT).elf -ex "target remote localhost:$(PORT_QEMU)"
+	
 clean:
 	rm -rf $(OBJ_DIR) $(PROJECT).elf *.map *.lst *.debug

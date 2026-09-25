@@ -8,7 +8,6 @@ extern uint32_t _edata;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
 
-
 uint8_t my_dump_heap[4098] __attribute__((aligned(8))) = {0};
 
 my_heap_t my_heap = {
@@ -25,14 +24,14 @@ extern void EXTI_4_IRQ_handler();
 extern void EXTI_5_9_IRQ_handler();
 extern void EXTI_10_15_IRQ_handler();
 
-// Systick 
+// Systick
 extern void Systick_Init(void);
 extern void SysTick_Handler(void);
 
 // PendSv
 extern void PendSV_Init(void);
 extern void PendSv_Handler(void);
-
+extern int main();
 extern void Init_Communication_Lines(void);
 
 typedef struct {
@@ -48,16 +47,15 @@ typedef struct {
 #define SysTick_CTRL_TICKINT (1UL << 1)
 #define SysTick_CTRL_CLK_SOURCE (1UL << 2)
 
-
 void Reset_Handler(void);
 void Default_Handler(void);
 
-void NMI_Handler(void) __attribute((weak, alias("Default_Handler")));
-void HardFault_Handler(void) __attribute((weak, alias("Default_Handler")));
+void NMI_Handler(void);
+void HardFault_Handler(void);
 void SVC_Handler(void);
 
 __attribute__((section(".vector_table"))) const uint32_t vector_table[] = {
-    (uint32_t) &_estack,
+    (uint32_t)&_estack,
     (uint32_t)&Reset_Handler,     // Index 1 : Reset Handler
     (uint32_t)&NMI_Handler,       // Index 2 : NMI
     (uint32_t)&HardFault_Handler, // Index 3 : HardFault
@@ -67,7 +65,7 @@ __attribute__((section(".vector_table"))) const uint32_t vector_table[] = {
     0,
     0,
     0,
-    0, // Index 4-10 : Faults & Reserved
+    0,                      // Index 4-10 : Faults & Reserved
     (uint32_t)&SVC_Handler, // Index 11 : SVCall
     0,
     0,                          // Index 12-13 : Debug / Reserved
@@ -80,44 +78,43 @@ __attribute__((section(".vector_table"))) const uint32_t vector_table[] = {
     (uint32_t)&Default_Handler, // Index 20 : FLASH (IRQ 4)
     (uint32_t)&Default_Handler, // Index 21 : RCC (IRQ 5)
 
-    (uint32_t)&Default_Handler, 
+    (uint32_t)&Default_Handler,
     (uint32_t)&EXTI_1_IRQ_handler, // Index 22 : EXTI0 (IRQ 6)
     (uint32_t)&EXTI_2_IRQ_handler, // Index 23 : EXTI1 (IRQ 7)
     (uint32_t)&EXTI_3_IRQ_handler, // Index 24 : EXTI2 (IRQ 8)
     (uint32_t)&EXTI_4_IRQ_handler, // Index 25 : EXTI3 (IRQ 9)
 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
 
     0,
 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
-    (uint32_t)&Default_Handler, 
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
+    (uint32_t)&Default_Handler,
 
-    0
-};
+    0};
 
 void Reset_Handler(void) {
   uint32_t *_sptr = &_sidata;
@@ -132,25 +129,30 @@ void Reset_Handler(void) {
   while (d_ptr < &_ebss) {
     (*d_ptr++) = 0;
   }
-  
+
   Systick_Init();
   PendSV_Init();
-  
-  
+  main();
 }
 
-void Default_Handler(){
-    while (1) {
-    
-    }
+void NMI_Handler(void) {
+  while (1) {
+  }
 }
 
-__attribute__((naked)) void SVC_Handler(void){
-    __asm__ volatile (
-            "mrs r0, control   \n\t" // Read CONTROL register
-            "bic r0, r0, #2    \n\t" // Clear bit 1 (SPSEL = 0 -> use MSP)
-            "msr control, r0   \n\t" // Write back to CONTROL
-            "isb               \n\t" // Instruction Synchronization Barrier
-            ::: "memory"
-        );   
+void Default_Handler(void) {
+  while (1) {
+  }
+}
+
+void HardFault_Handler(void) {
+  while (1) {
+  }
+}
+
+__attribute__((naked)) void SVC_Handler(void) {
+  __asm__ volatile("isb                       \n\t"
+                   "ldr lr, =0xFFFFFFF9      \n\t"
+                   "bx lr                    \n\t" ::
+                       :);
 }

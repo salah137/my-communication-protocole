@@ -268,14 +268,14 @@ void Communication_Line_Default_Read(void *params) {
             break;
           } else {
             params_list->recieved_bits++;
-            params_list->last_edge = FAILING;
+            params_list->last_edge = FAILLING;
             params_list->last_falling_edge = timer_ticks;
           }
         }
         break;
       }
 
-      case FAILING:
+      case FAILLING:
         // impossible
         break;
 
@@ -295,7 +295,7 @@ void Communication_Line_Default_Read(void *params) {
         // impossible
         break;
 
-      case FAILING: {
+      case FAILLING: {
         uint8_t bits_count = timer_ticks - params_list->last_falling_edge;
 
         for (uint8_t i = 0; i < bits_count; i++) {

@@ -1,4 +1,5 @@
 #include "communication_lines/communication_line.h"
+#include "dump_heap/dump_heap.h"
 #include <stdint.h>
 
 #define my_address 0x43
@@ -9,6 +10,9 @@ extern uint8_t read_gpiob_level(uint8_t pin);
 extern uint8_t accessible_address_count;
 extern accessible_address_t **accessible_address;
 extern machine_state_t *my_machine;
+extern my_heap_t my_heap;
+extern void *allocate_dumb(my_heap_t *heap, size_t size);
+extern void Fire_PendSv(uint8_t from_isr);
 
 void insert_accessible_address(uint8_t pin, uint8_t nodes_number,
                                uint8_t address) {
@@ -55,6 +59,8 @@ void insert_accessible_address(uint8_t pin, uint8_t nodes_number,
 
     if (wrote == 0) {
       if (accessible_address_count < 15) {
+        accessible_address[accessible_address_count] =
+            allocate_dumb(&my_heap, sizeof(accessible_address_t *));
         accessible_address[accessible_address_count]->address = address;
         accessible_address[accessible_address_count]->pin = pin;
         accessible_address[accessible_address_count++]->nodes_number =
@@ -137,64 +143,68 @@ void Communication_handler(void *params) {
 
   if (rx_params->finished_reading_data == 1) {
     switch (rx_params->mode) {
-    case SEARCHING:
+    case SEARCHING: {
 
-    {
-      insert_accessible_address(rx_params->pin, rx_params->data_buffer,
-                                rx_params->address2_buffer);
+      if (rx_params->data_buffer > 20) {
 
-      if (rx_params->address2_buffer == my_machine->machine_address) {
-        tx_params->address2_buffer = my_address;
-        tx_params->address_buffer = rx_params->address_buffer;
-        tx_params->data_buffer = 0b00000000;
-        tx_params->s_mode = TARGET_EXISTS;
-        params_list->writing_func((void *)tx_params);
       } else {
-        int8_t searching_node = search_for_node(rx_params->address2_buffer);
-        int8_t sender_node = search_for_node(rx_params->address_buffer);
 
-        if (searching_node != -1 &&
-            read_gpiob_level(accessible_address[searching_node]->pin) != 0) {
-          if (sender_node != -1) {
-            lines[accessible_address[sender_node]->pin - 1]
-                ->params_tx->address_buffer = rx_params->address_buffer;
+        insert_accessible_address(rx_params->pin, rx_params->data_buffer,
+                                  rx_params->address2_buffer);
 
-            lines[accessible_address[sender_node]->pin - 1]
-                ->params_tx->address2_buffer = rx_params->address2_buffer;
-
-            lines[accessible_address[sender_node]->pin - 1]
-                ->params_tx->data_buffer =
-                accessible_address[searching_node]->nodes_number;
-
-            lines[accessible_address[sender_node]->pin - 1]->params_tx->s_mode =
-                TARGET_EXISTS;
-
-            lines[accessible_address[sender_node]->pin - 1]->params_tx->s =
-                SENDING_MODE;
-
-            lines[accessible_address[sender_node]->pin - 1]->writing_func(
-                (void *)lines[accessible_address[sender_node]->pin - 1]
-                    ->params_tx);
-
-          } else {
-            tx_params->address_buffer = rx_params->address_buffer;
-            tx_params->address2_buffer = rx_params->address2_buffer;
-            tx_params->data_buffer =
-                accessible_address[searching_node]->nodes_number;
-            tx_params->s_mode = TARGET_EXISTS;
-            tx_params->s = SENDING_MODE;
-
-            params_list->writing_func((void *)tx_params);
-          }
+        if (rx_params->address2_buffer == my_machine->machine_address) {
+          tx_params->address2_buffer = my_address;
+          tx_params->address_buffer = rx_params->address_buffer;
+          tx_params->data_buffer = 0b00000000;
+          tx_params->s_mode = TARGET_EXISTS;
+          params_list->writing_func((void *)tx_params);
         } else {
-          for (uint8_t i = 0; i < 4; i++) {
-            lines[i]->params_tx->address_buffer = rx_params->address_buffer;
-            lines[i]->params_tx->address2_buffer = rx_params->address2_buffer;
-            lines[i]->params_tx->data_buffer = rx_params->data_buffer + 1;
-            lines[i]->params_tx->s_mode = SEARCHING;
-            lines[i]->params_tx->s = SENDING_MODE;
+          int8_t searching_node = search_for_node(rx_params->address2_buffer);
+          int8_t sender_node = search_for_node(rx_params->address_buffer);
 
-            lines[i]->writing_func((void *)lines[i]->params_tx);
+          if (searching_node != -1 &&
+              read_gpiob_level(accessible_address[searching_node]->pin) != 0) {
+            if (sender_node != -1) {
+              lines[accessible_address[sender_node]->pin - 1]
+                  ->params_tx->address_buffer = rx_params->address_buffer;
+
+              lines[accessible_address[sender_node]->pin - 1]
+                  ->params_tx->address2_buffer = rx_params->address2_buffer;
+
+              lines[accessible_address[sender_node]->pin - 1]
+                  ->params_tx->data_buffer =
+                  accessible_address[searching_node]->nodes_number;
+
+              lines[accessible_address[sender_node]->pin - 1]
+                  ->params_tx->s_mode = TARGET_EXISTS;
+
+              lines[accessible_address[sender_node]->pin - 1]->params_tx->s =
+                  SENDING_MODE;
+
+              lines[accessible_address[sender_node]->pin - 1]->writing_func(
+                  (void *)lines[accessible_address[sender_node]->pin - 1]
+                      ->params_tx);
+
+            } else {
+              tx_params->address_buffer = rx_params->address_buffer;
+              tx_params->address2_buffer = rx_params->address2_buffer;
+              tx_params->data_buffer =
+                  accessible_address[searching_node]->nodes_number;
+              tx_params->s_mode = TARGET_EXISTS;
+              tx_params->s = SENDING_MODE;
+
+              params_list->writing_func((void *)tx_params);
+            }
+          } else {
+            for (uint8_t i = 0; i < 4; i++) {
+              lines[i]->params_tx->address_buffer = rx_params->address_buffer;
+              lines[i]->params_tx->address2_buffer = rx_params->address2_buffer;
+              lines[i]->params_tx->data_buffer = rx_params->data_buffer + 1;
+              lines[i]->params_tx->s_mode = SEARCHING;
+              lines[i]->params_tx->s = SENDING_MODE;
+
+              lines[i]->writing_func((void *)lines[i]->params_tx);
+            }
           }
         }
       }
@@ -282,6 +292,8 @@ void Communication_handler(void *params) {
 
     rx_params->finished_reading_data = 0;
   }
+
+  Fire_PendSv(0);
 
   return;
 }

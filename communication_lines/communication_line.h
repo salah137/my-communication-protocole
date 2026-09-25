@@ -10,7 +10,7 @@ typedef enum {
   WAITING
 } modes_t;
 
-typedef enum { RISING, FAILING, UNKOWN } last_edge_t;
+typedef enum { RISING, FAILLING, UNKOWN } last_edge_t;
 
 typedef enum {
   READING_MODE,
