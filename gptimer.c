@@ -26,7 +26,6 @@ void TIM2_Init(void) {
 
   TIM2_EGR |= (1 << 0);
   
-  // Correct flag clear: clear bit 0 safely without wiping other bits
   TIM2_SR &= ~(1 << 0);
 
   TIM2_DIER |= (1 << 0); // Enable update interrupt

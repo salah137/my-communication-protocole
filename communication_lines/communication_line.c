@@ -197,7 +197,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
     break;
   case READING_ADDRESS2:
     if (params_list->recieved_bits == 7) {
-      params_list->address_buffer = params_list->scratch_buffer;
+      params_list->address2_buffer = params_list->scratch_buffer;
       params_list->last_falling_edge = -1;
       params_list->recieved_bits = 0;
       params_list->finished_reading_address2 = 1;
