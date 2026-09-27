@@ -34,6 +34,9 @@ extern void PendSv_Handler(void);
 extern int main();
 extern void Init_Communication_Lines(void);
 
+extern void init_gpioa() ;
+extern void init_gpiob() ;
+
 typedef struct {
   uint32_t CTRL;
   uint32_t LOAD;
@@ -130,6 +133,8 @@ void Reset_Handler(void) {
     (*d_ptr++) = 0;
   }
 
+  init_gpioa();
+  init_gpiob();
   Systick_Init();
   PendSV_Init();
   main();
