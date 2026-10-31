@@ -1,0 +1,2 @@
+source /home/salah/projects/arm-cortext-m/my-communication-protocole/testing/build/bootloader/gdbinit/symbols
+source /home/salah/projects/arm-cortext-m/my-communication-protocole/testing/build/bootloader/gdbinit/connect

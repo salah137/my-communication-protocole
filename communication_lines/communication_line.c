@@ -4,15 +4,15 @@
 #include <stdint.h>
 
 extern void *allocate_dumb(my_heap_t *heap, size_t size);
-extern thread_t *create_thread(char *name, void (*thread_function)(void *),
-                               uint32_t stack_size, void *params, uint16_t id);
 extern my_heap_t my_heap;
 extern uint8_t read_gpiob_level(uint8_t pin);
 extern volatile uint32_t timer_ticks;
 extern void reset_pin_a(uint8_t pin);
 extern void set_pin_a(uint8_t pin);
 extern void Communication_handler(void *params);
-extern void Fire_PendSv(void);
+extern void Fire_PendSv(uint8_t from_isr);
+extern thread_t* create_thread_linked(char *name, void (*thread_function)(void *),
+                         uint32_t stack_size, void *params, uint8_t linked);
 
 communication_line_t **lines;
 accessible_address_t **accessible_address;
@@ -60,22 +60,22 @@ communication_line_t *create_line(uint8_t i) {
 
   switch (i) {
   case 1:
-    thread = create_thread("line_1", Communication_Line1_Read, 256,
+    thread = create_thread_linked("line_1", Communication_Line1_Read, 256,
                            (void *)params_rx, 0);
     break;
 
   case 2:
-    thread = create_thread("line_2", Communication_Line2_Read, 256,
+    thread = create_thread_linked("line_2", Communication_Line2_Read, 256,
                            (void *)params_rx, 0);
     break;
 
   case 3:
-    thread = create_thread("line_3", Communication_Line3_Read, 256,
+    thread = create_thread_linked("line_3", Communication_Line3_Read, 256,
                            (void *)params_rx, 0);
     break;
 
   case 4:
-    thread = create_thread("line_4", Communication_Line4_Read, 256,
+    thread = create_thread_linked("line_4", Communication_Line4_Read, 256,
                            (void *)params_rx, 0);
     break;
 
@@ -131,7 +131,7 @@ void Init_Communication_Lines(uint8_t address) {
 
   
   handler_params = allocate_dumb(&my_heap, sizeof(handler_params_t));
-  handler_thread = create_thread("communication_handler", Communication_handler,
+  handler_thread = create_thread_linked("communication_handler", Communication_handler,
                                  256, (void *)handler_params, 0);
 
   my_machine = allocate_dumb(&my_heap, sizeof(machine_state_t));
@@ -353,7 +353,7 @@ void Communication_Line_Default_Read(void *params) {
                      : "r"(handler_thread_pointer)
                      : "memory");
 
-    Fire_PendSv();
+    Fire_PendSv(1);
   }
 }
 

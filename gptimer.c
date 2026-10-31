@@ -40,5 +40,10 @@ void TIM2_IRQHandler(void) {
     if (TIM2_SR & (1 << 0)) {
         TIM2_SR &= ~(1 << 0); // Clear update interrupt flag safely
         timer_ticks++;
+      
+        
     }
+
+    
+    
 }

@@ -1,0 +1,6 @@
+-Wno-frame-address
+-mlongcalls
+-fno-builtin-memcpy
+-fno-builtin-memset
+-fno-builtin-bzero
+"-specs=/home/salah/projects/arm-cortext-m/my-communication-protocole/testing/build/specs/picolibc.specs"

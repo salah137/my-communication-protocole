@@ -1,50 +1,59 @@
-CC = arm-none-eabi-gcc
-CPU = cortex-m3
-FLAGS = -mthumb -mcpu=$(CPU) -c -g3 -O0 -std=gnu11
-LD = arm-none-eabi-ld
-GDB = arm-none-eabi-gdb
+CC      = arm-none-eabi-gcc
+LD      = arm-none-eabi-ld
+GDB     = arm-none-eabi-gdb
+OBJDUMP = arm-none-eabi-objdump
+READELF = arm-none-eabi-readelf
 
-LDFLAGS = -T map.ld
-LDFLAGS2 = -nostdlib -T map.ld -Map=out.map
+CPU     = cortex-m3
+CFLAGS  = -mthumb -mcpu=$(CPU) -g3 -O0 -std=gnu11 -MMD -MP
+LDFLAGS = -nostdlib -T map.ld -Map=out.map
+
+PORT_OPENOCD ?= 3333
+PORT_QEMU ?= 1234
+
+PROJECT  = mesh
+OBJ_DIR  = o_files
+
+C_FILES := $(shell find . -name "*.c" -not -path "./$(OBJ_DIR)/*" -not -path "./testing/*" | sed 's|^\./||')
+
+OBJS    := $(C_FILES:%.c=$(OBJ_DIR)/%.o)
 
 BOARD ?= stm32vldiscovery
-PORT_QEMU ?= 1234
-PORT_RENODE ?= 3333
 
-PROJECT = mesh
-OBJ_DIR = o_files
 
-# 1. Find all .c files recursively, excluding the o_files directory, and strip leading ./
-C_FILES := $(shell find . -name "*.c" -not -path "./$(OBJ_DIR)/*" | sed 's|^\./||')
-
-# 2. Map source files to corresponding object files inside o_files/
-OBJS := $(C_FILES:%.c=$(OBJ_DIR)/%.o)
-
-.PHONY: all qemu gdb clean
+.PHONY: all flash openocd_server gdb lst clean
 
 all: $(PROJECT).elf
 
-# 3. Pattern rule to compile any .c file into its mirrored .o path, creating subdirs automatically
 $(OBJ_DIR)/%.o: %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(FLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
-# 4. Link all automatically gathered object files into the final ELF
 $(PROJECT).elf: $(OBJS)
-	$(LD) $(LDFLAGS2) -o $@ $^
+	$(LD) $(LDFLAGS) -o $@ $^
 
-qemu: $(PROJECT).elf
-	arm-none-eabi-objdump -D -S $(PROJECT).elf > $(PROJECT).elf.lst
-	arm-none-eabi-readelf -a $(PROJECT).elf > $(PROJECT).elf.debug
-	qemu-system-arm -S -M $(BOARD) -cpu $(CPU) -nographic -kernel $(PROJECT).elf -gdb tcp::$(PORT)
+lst: $(PROJECT).elf
+	$(OBJDUMP) -D -S $< > $(PROJECT).elf.lst
+	$(READELF) -a $< > $(PROJECT).elf.debug
 
-renode: $(PROJECT).elf
-	renode mesh.resc
-gdb_renode: $(PROJECT).elf
-	$(GDB) -q $(PROJECT).elf -ex "target remote localhost:$(PORT_RENODE)"
+qemu : 
+	qemu-system-arm -S -M $(BOARD) -cpu $(CPU) -nographic -kernel $(PROJECT).elf -gdb tcp::1234
+	
+	
+flash: $(PROJECT).elf
+	openocd -f interface/stlink.cfg -f target/stm32f1x.cfg \
+	        -c "program $< verify reset exit"
 
-gdb_qemu: $(PROJECT).elf 
-	$(GDB) -q $(PROJECT).elf -ex "target remote localhost:$(PORT_QEMU)"
+openocd_server:
+	openocd -f interface/stlink.cfg -f target/stm32f1x.cfg
+
+gdb_openocd: $(PROJECT).elf
+	$(GDB) -q $< -ex "target remote localhost:$(PORT_OPENOCD)"
+
+gdb_qemu: $(PROJECT).elf
+	$(GDB) -q $< -ex "target remote localhost:$(PORT_QEMU)"
 	
 clean:
 	rm -rf $(OBJ_DIR) $(PROJECT).elf *.map *.lst *.debug
+
+-include $(OBJS:.o=.d)

@@ -31,9 +31,11 @@ extern void enable_exti(void);
 void init_gpioa() {
 
   for (int i = 1; i <= 4; i++) {
+      GPIOA_BSRR = (1UL << i);   /* idle high before it becomes an output */
+
     GPIOA_CRL &= ~(0xFU << i * 4);
-    GPIOA_CRL |= (0x1U << i * 4);
-    GPIOA_ODR &= ~(1 << i);
+    GPIOA_CRL = (GPIOA_CRL & ~(0xFU << (i * 4))) | (0x5U << (i * 4));
+   // GPIOA_ODR &= ~(1 << i);
   }
 }
 
@@ -82,7 +84,7 @@ void reset_pin_a(uint8_t pin) {
   if (pin > 15) {
     return;
   }
-  GPIOA_BSRR = (1UL << (pin + 15));
+  GPIOA_BSRR = (1UL << (pin + 16));
 }
 
 void set_pin_b(uint8_t pin) {

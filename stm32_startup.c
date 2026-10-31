@@ -7,6 +7,8 @@ extern uint32_t _sdata;
 extern uint32_t _edata;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
+extern void enable_exti();
+
 
 uint8_t my_dump_heap[4098] __attribute__((aligned(8))) = {0};
 
@@ -25,8 +27,11 @@ extern void EXTI_5_9_IRQ_handler();
 extern void EXTI_10_15_IRQ_handler();
 
 // Systick
-extern void Systick_Init(void);
 extern void SysTick_Handler(void);
+
+// TIM2
+extern void TIM2_Init(void);
+extern void TIM2_IRQHandler(void);
 
 // PendSv
 extern void PendSV_Init(void);
@@ -34,8 +39,8 @@ extern void PendSv_Handler(void);
 extern int main();
 extern void Init_Communication_Lines(void);
 
-extern void init_gpioa() ;
-extern void init_gpiob() ;
+extern void init_gpio() ;
+
 
 typedef struct {
   uint32_t CTRL;
@@ -57,67 +62,25 @@ void NMI_Handler(void);
 void HardFault_Handler(void);
 void SVC_Handler(void);
 
+#define IRQ(n) [16 + (n)]
+
 __attribute__((section(".vector_table"))) const uint32_t vector_table[] = {
-    (uint32_t)&_estack,
-    (uint32_t)&Reset_Handler,     // Index 1 : Reset Handler
-    (uint32_t)&NMI_Handler,       // Index 2 : NMI
-    (uint32_t)&HardFault_Handler, // Index 3 : HardFault
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,                      // Index 4-10 : Faults & Reserved
-    (uint32_t)&SVC_Handler, // Index 11 : SVCall
-    0,
-    0,                          // Index 12-13 : Debug / Reserved
-    (uint32_t)&PendSv_Handler,  // Index 14 : PendSV
-    (uint32_t)&SysTick_Handler, // Index 15 : SysTick
-    (uint32_t)&Default_Handler, // Index 16 : WWDG (IRQ 0)
-    (uint32_t)&Default_Handler, // Index 17 : PVD (IRQ 1)
-    (uint32_t)&Default_Handler, // Index 18 : TAMPER (IRQ 2)
-    (uint32_t)&Default_Handler, // Index 19 : RTC (IRQ 3)
-    (uint32_t)&Default_Handler, // Index 20 : FLASH (IRQ 4)
-    (uint32_t)&Default_Handler, // Index 21 : RCC (IRQ 5)
+    [0]  = (uint32_t)&_estack,
+    [1]  = (uint32_t)&Reset_Handler,
+    [2]  = (uint32_t)&NMI_Handler,
+    [3]  = (uint32_t)&HardFault_Handler,
+    [11] = (uint32_t)&SVC_Handler,
+    [14] = (uint32_t)&PendSv_Handler,
+    [15] = (uint32_t)&SysTick_Handler,
 
-    (uint32_t)&Default_Handler,
-    (uint32_t)&EXTI_1_IRQ_handler, // Index 22 : EXTI0 (IRQ 6)
-    (uint32_t)&EXTI_2_IRQ_handler, // Index 23 : EXTI1 (IRQ 7)
-    (uint32_t)&EXTI_3_IRQ_handler, // Index 24 : EXTI2 (IRQ 8)
-    (uint32_t)&EXTI_4_IRQ_handler, // Index 25 : EXTI3 (IRQ 9)
+    [16 ... 16 + 42] = (uint32_t)&Default_Handler,
 
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-
-    0,
-
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-    (uint32_t)&Default_Handler,
-
-    0};
+    IRQ(7)  = (uint32_t)&EXTI_1_IRQ_handler,
+    IRQ(8)  = (uint32_t)&EXTI_2_IRQ_handler,
+    IRQ(9)  = (uint32_t)&EXTI_3_IRQ_handler,
+    IRQ(10) = (uint32_t)&EXTI_4_IRQ_handler,
+    IRQ(28) = (uint32_t)&TIM2_IRQHandler,
+};
 
 void Reset_Handler(void) {
   uint32_t *_sptr = &_sidata;
@@ -133,11 +96,13 @@ void Reset_Handler(void) {
     (*d_ptr++) = 0;
   }
 
-  init_gpioa();
-  init_gpiob();
-  Systick_Init();
+  init_gpio();
+
   PendSV_Init();
   main();
+  while (1) {
+  
+  };
 }
 
 void NMI_Handler(void) {
@@ -150,9 +115,23 @@ void Default_Handler(void) {
   }
 }
 
-void HardFault_Handler(void) {
-  while (1) {
-  }
+__attribute__((naked)) void HardFault_Handler(void) {
+  __asm volatile(
+    "tst lr, #4      \n"
+    "ite eq          \n"
+    "mrseq r0, msp   \n"
+    "mrsne r0, psp   \n"
+    "b hardfault_c   \n");
+}
+
+void hardfault_c(uint32_t *frame) {
+    
+  volatile uint32_t pc   = frame[6];
+  volatile uint32_t lr   = frame[5];
+  volatile uint32_t cfsr = *(volatile uint32_t *)0xE000ED28;
+  volatile uint32_t bfar = *(volatile uint32_t *)0xE000ED38;
+  (void)pc; (void)lr; (void)cfsr; (void)bfar;
+  while (1) { }
 }
 
 __attribute__((naked)) void SVC_Handler(void) {

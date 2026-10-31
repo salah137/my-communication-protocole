@@ -34,17 +34,18 @@ void set_intr_pr(uint8_t irq, uint8_t priot) {
 void enable_exti() {
   RCC_APB2ENR |= (1UL << 0);
 
-  AFIO_EXTICR1 &= ~((0xFU << 4) | (0xFU << 8) | (0xFU << 12));
-  AFIO_EXTICR1 |= ((0x1U << 4) | (0x1U << 8) | (0x1U << 12));
+//  AFIO_EXTICR1 &= ~((0xFU << 4) | (0xFU << 8) | (0xFU << 12));
+//  AFIO_EXTICR1 |= ((0x1U << 4) | (0x1U << 8) | (0x1U << 12));
 
   AFIO_EXTICR2 &= ~(0xFU << 0);
   AFIO_EXTICR2 |=  (0x1U << 0);
-
 
   
   EXTI_IMR = (0x1EU);
   EXTI_RTSR = (0x1EU);
   EXTI_FTSR = (0x1EU);
+
+  EXTI_PR = 0x1E;
 
   set_intr_pr(7, 4);
   set_intr_pr(8, 4);
@@ -56,6 +57,7 @@ void enable_exti() {
 
 void g_handler(uint8_t i) {
   if (EXTI_PR & (1UL << i)) {
+    if (lines == 0) { for (;;); }             
     uint32_t *target_pointer = (uint32_t *)((uint32_t *)lines + (i - 1));
 
     __asm__ volatile("ldr r2,[%0]                   \n\t"
