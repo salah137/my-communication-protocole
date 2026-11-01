@@ -1,4 +1,5 @@
 #include "stdint.h"
+#include "tasks/tasks.h"
 
 typedef struct {
   uint32_t CTRL;
@@ -6,6 +7,7 @@ typedef struct {
   uint32_t VAL;
   uint32_t CALIB;
 } systemt_t;
+extern uint8_t decoding;
 
 #define SysTick_BASE (0xE000E010UL)
 
@@ -14,7 +16,7 @@ typedef struct {
 #define SysTick_CTRL_CLK_SOURCE (1UL << 2)
 #define CYCLES_PER_TICKS 500
 
-extern void Fire_PendSv(uint8_t from_isr);
+extern void Fire_PendSv(uint8_t from_isr,thread_t* t_pointer);
 
 void Systick_Init(void) {
   systemt_t *SysTick = (systemt_t *)SysTick_BASE;
@@ -28,6 +30,9 @@ void Systick_Init(void) {
 }
 
 void SysTick_Handler(void){
-    Fire_PendSv(0);
+    if(decoding == 0)
+        Fire_PendSv(0,0);
+
+    
     return;
 }

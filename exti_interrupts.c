@@ -1,9 +1,10 @@
 #include "communication_lines/communication_line.h"
 #include "stdint.h"
+#include "tasks/tasks.h"
 #include <stdint.h>
 
 #define EXTI_BASE (0x40010400UL)
-
+uint8_t decoding = 0;
 // EXTI Peripheral Registers
 #define EXTI_IMR                                                               \
   (*(volatile uint32_t *)(EXTI_BASE + 0x00U)) // Interrupt Mask Register
@@ -25,7 +26,9 @@
 #define AFIO_EXTICR2 (*(volatile uint32_t *)(0x4001000CUL))
 
 extern communication_line_t **lines;
-extern void Fire_PendSv(uint8_t from_isr);
+extern void Fire_PendSv(uint8_t from_isr, thread_t *t_pointer);
+
+
 
 void set_intr_pr(uint8_t irq, uint8_t priot) {
   NVIC_IPR[irq] = (uint8_t)(priot & 0xFU << 4);
@@ -56,17 +59,15 @@ void enable_exti() {
 }
 
 void g_handler(uint8_t i) {
+    
   if (EXTI_PR & (1UL << i)) {
-    if (lines == 0) { for (;;); }             
-    uint32_t *target_pointer = (uint32_t *)((uint32_t *)lines + (i - 1));
 
-    __asm__ volatile("ldr r2,[%0]                   \n\t"
-                     "ldr r2,[r2]                   \n\t"
-                     :
-                     : "r"(target_pointer)
-                     : "memory");
+      if (lines == 0) { for (;;); }             
+    
+    communication_line_t* line = lines[i - 1];
+    thread_t* target_pointer = line->communication_thread;
 
-    Fire_PendSv(1);
+    Fire_PendSv(1, target_pointer);
 
     EXTI_PR = (1 << i);
   }

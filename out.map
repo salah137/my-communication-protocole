@@ -1,0 +1,587 @@
+
+Merging object attributes
+
+
+Discarded input sections
+
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/communication_handler.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .group         0x00000000        0xc o_files/main.o
+ .debug_macro   0x00000000      0xad2 o_files/main.o
+ .debug_macro   0x00000000       0x22 o_files/main.o
+ .debug_macro   0x00000000       0x8e o_files/main.o
+ .debug_macro   0x00000000       0x51 o_files/main.o
+ .debug_macro   0x00000000      0x103 o_files/main.o
+ .debug_macro   0x00000000       0x6a o_files/main.o
+ .debug_macro   0x00000000      0x1df o_files/main.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .group         0x00000000        0xc o_files/gptimer.o
+ .debug_macro   0x00000000      0xad2 o_files/gptimer.o
+ .debug_macro   0x00000000       0x22 o_files/gptimer.o
+ .debug_macro   0x00000000       0x8e o_files/gptimer.o
+ .debug_macro   0x00000000       0x51 o_files/gptimer.o
+ .debug_macro   0x00000000      0x103 o_files/gptimer.o
+ .debug_macro   0x00000000       0x6a o_files/gptimer.o
+ .debug_macro   0x00000000      0x1df o_files/gptimer.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000      0xad2 o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000       0x22 o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000       0x8e o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000       0x51 o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000      0x103 o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000       0x6a o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000      0x1df o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00000000      0x190 o_files/dump_heap/dump_heap.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000      0xad2 o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000       0x22 o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000       0x8e o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000       0x51 o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000      0x103 o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000       0x6a o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000      0x1df o_files/communication_lines/communication_line.o
+ .debug_macro   0x00000000      0x190 o_files/communication_lines/communication_line.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/systick_interrupt.o
+ .debug_macro   0x00000000      0xad2 o_files/systick_interrupt.o
+ .debug_macro   0x00000000       0x22 o_files/systick_interrupt.o
+ .debug_macro   0x00000000       0x8e o_files/systick_interrupt.o
+ .debug_macro   0x00000000       0x51 o_files/systick_interrupt.o
+ .debug_macro   0x00000000      0x103 o_files/systick_interrupt.o
+ .debug_macro   0x00000000       0x6a o_files/systick_interrupt.o
+ .debug_macro   0x00000000      0x1df o_files/systick_interrupt.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/stm32_startup.o
+ .debug_macro   0x00000000      0xad2 o_files/stm32_startup.o
+ .debug_macro   0x00000000       0x22 o_files/stm32_startup.o
+ .debug_macro   0x00000000       0x8e o_files/stm32_startup.o
+ .debug_macro   0x00000000       0x51 o_files/stm32_startup.o
+ .debug_macro   0x00000000      0x103 o_files/stm32_startup.o
+ .debug_macro   0x00000000       0x6a o_files/stm32_startup.o
+ .debug_macro   0x00000000      0x1df o_files/stm32_startup.o
+ .debug_macro   0x00000000      0x190 o_files/stm32_startup.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/gpio_driver.o
+ .debug_macro   0x00000000      0xad2 o_files/gpio_driver.o
+ .debug_macro   0x00000000       0x22 o_files/gpio_driver.o
+ .debug_macro   0x00000000       0x8e o_files/gpio_driver.o
+ .debug_macro   0x00000000       0x51 o_files/gpio_driver.o
+ .debug_macro   0x00000000      0x103 o_files/gpio_driver.o
+ .debug_macro   0x00000000       0x6a o_files/gpio_driver.o
+ .debug_macro   0x00000000      0x1df o_files/gpio_driver.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/tasks/tasks.o
+ .debug_macro   0x00000000      0xad2 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x22 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x8e o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x51 o_files/tasks/tasks.o
+ .debug_macro   0x00000000      0x103 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x6a o_files/tasks/tasks.o
+ .debug_macro   0x00000000      0x1df o_files/tasks/tasks.o
+ .debug_macro   0x00000000      0x190 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x24 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x74 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x3c o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x34 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x16 o_files/tasks/tasks.o
+ .debug_macro   0x00000000      0x364 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x16 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x4a o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x34 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x10 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x58 o_files/tasks/tasks.o
+ .debug_macro   0x00000000      0x1de o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x16 o_files/tasks/tasks.o
+ .debug_macro   0x00000000       0x29 o_files/tasks/tasks.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/PendSv_handler.o
+ .debug_macro   0x00000000      0xad2 o_files/PendSv_handler.o
+ .debug_macro   0x00000000       0x22 o_files/PendSv_handler.o
+ .debug_macro   0x00000000       0x8e o_files/PendSv_handler.o
+ .debug_macro   0x00000000       0x51 o_files/PendSv_handler.o
+ .debug_macro   0x00000000      0x103 o_files/PendSv_handler.o
+ .debug_macro   0x00000000       0x6a o_files/PendSv_handler.o
+ .debug_macro   0x00000000      0x1df o_files/PendSv_handler.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .group         0x00000000        0xc o_files/exti_interrupts.o
+ .debug_macro   0x00000000      0xad2 o_files/exti_interrupts.o
+ .debug_macro   0x00000000       0x22 o_files/exti_interrupts.o
+ .debug_macro   0x00000000       0x8e o_files/exti_interrupts.o
+ .debug_macro   0x00000000       0x51 o_files/exti_interrupts.o
+ .debug_macro   0x00000000      0x103 o_files/exti_interrupts.o
+ .debug_macro   0x00000000       0x6a o_files/exti_interrupts.o
+ .debug_macro   0x00000000      0x1df o_files/exti_interrupts.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+FLASH            0x08000000         0x00020000         xr
+RAM              0x20000000         0x00002000         xrw
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+
+.text           0x08000000     0x2328
+                0x08000000                        . = ALIGN (0x4)
+                0x08000000                        _stext = .
+ *(.vector_table)
+ .vector_table  0x08000000       0xec o_files/stm32_startup.o
+                0x08000000                vector_table
+ *(.text*)
+ .text          0x080000ec      0xa74 o_files/communication_handler.o
+                0x080000ec                insert_accessible_address
+                0x08000348                search_for_node
+                0x080003c8                Communication_handler
+ .text          0x08000b60       0xbc o_files/main.o
+                0x08000b60                task1
+                0x08000b6a                task2
+                0x08000b74                task3
+                0x08000b7e                setup_tasks
+                0x08000bf4                main
+ .text          0x08000c1c       0xc4 o_files/gptimer.o
+                0x08000c1c                TIM2_Init
+                0x08000ca8                TIM2_IRQHandler
+ .text          0x08000ce0       0x8a o_files/dump_heap/dump_heap.o
+                0x08000ce0                destroy_dumb
+                0x08000d0a                allocate_dumb
+ *fill*         0x08000d6a        0x2 
+ .text          0x08000d6c      0xcac o_files/communication_lines/communication_line.o
+                0x08000d6c                create_line
+                0x08000ec8                Init_Communication_Lines
+                0x08000f9c                check_the_bite
+                0x080011b4                Communication_Line3_Read
+                0x080011b4                Communication_Line2_Read
+                0x080011b4                Communication_Line4_Read
+                0x080011b4                Communication_Line_Default_Read
+                0x080011b4                Communication_Line1_Read
+                0x080013e8                Communication_Line_Default_Write
+                0x080013e8                Communication_Line4_Write
+                0x080013e8                Communication_Line3_Write
+                0x080013e8                Communication_Line1_Write
+                0x080013e8                Communication_Line2_Write
+ .text          0x08001a18       0x50 o_files/systick_interrupt.o
+                0x08001a18                Systick_Init
+                0x08001a48                SysTick_Handler
+ .text          0x08001a68       0xc4 o_files/stm32_startup.o
+                0x08001a68                Reset_Handler
+                0x08001acc                NMI_Handler
+                0x08001ad2                Default_Handler
+                0x08001ad8                HardFault_Handler
+                0x08001aec                hardfault_c
+                0x08001b20                SVC_Handler
+ .text          0x08001b2c      0x244 o_files/gpio_driver.o
+                0x08001b2c                init_gpioa
+                0x08001b9c                init_gpiob
+                0x08001c1c                init_gpio
+                0x08001c40                read_gpiob_level
+                0x08001c7c                read_gpioa_level
+                0x08001cb8                set_pin_a
+                0x08001ce4                reset_pin_a
+                0x08001d14                set_pin_b
+                0x08001d40                reset_pin_b
+ .text          0x08001d70      0x2a0 o_files/tasks/tasks.o
+                0x08001d70                thread_exit
+                0x08001d7c                build_frame
+                0x08001e28                create_thread_linked
+                0x08001fc4                start_routines
+                0x08001fe0                next_task
+ .text          0x08002010      0x174 o_files/PendSv_handler.o
+                0x08002010                PendSV_Init
+                0x0800202c                Fire_PendSv
+                0x08002070                PendSv_Handler
+ .text          0x08002184      0x154 o_files/exti_interrupts.o
+                0x08002184                set_intr_pr
+                0x080021b2                enable_exti
+                0x0800223c                g_handler
+                0x080022a0                EXTI_1_IRQ_handler
+                0x080022ae                EXTI_2_IRQ_handler
+                0x080022bc                EXTI_3_IRQ_handler
+                0x080022ca                EXTI_4_IRQ_handler
+ *(.rodata*)
+ .rodata        0x080022d8       0x16 o_files/main.o
+ *fill*         0x080022ee        0x2 
+ .rodata        0x080022f0       0x36 o_files/communication_lines/communication_line.o
+                0x08002328                        . = ALIGN (0x4)
+ *fill*         0x08002326        0x2 
+                0x08002328                        _etext = .
+                0x08002328                        _sidata = LOADADDR (.data)
+
+.glue_7         0x08002328        0x0
+ .glue_7        0x08002328        0x0 linker stubs
+
+.glue_7t        0x08002328        0x0
+ .glue_7t       0x08002328        0x0 linker stubs
+
+.vfp11_veneer   0x08002328        0x0
+ .vfp11_veneer  0x08002328        0x0 linker stubs
+
+.v4_bx          0x08002328        0x0
+ .v4_bx         0x08002328        0x0 linker stubs
+
+.iplt           0x08002328        0x0
+ .iplt          0x08002328        0x0 o_files/communication_handler.o
+
+.rel.dyn        0x08002328        0x0
+ .rel.iplt      0x08002328        0x0 o_files/communication_handler.o
+
+.data           0x20000000       0x10 load address 0x08002328
+                0x20000000                        . = ALIGN (0x4)
+                0x20000000                        _sdata = .
+ *(.data*)
+ .data          0x20000000        0x0 o_files/communication_handler.o
+ .data          0x20000000        0x0 o_files/main.o
+ .data          0x20000000        0x0 o_files/gptimer.o
+ .data          0x20000000        0x0 o_files/dump_heap/dump_heap.o
+ .data          0x20000000        0x0 o_files/communication_lines/communication_line.o
+ .data          0x20000000        0x0 o_files/systick_interrupt.o
+ .data          0x20000000       0x10 o_files/stm32_startup.o
+                0x20000000                my_heap
+ .data          0x20000010        0x0 o_files/gpio_driver.o
+ .data          0x20000010        0x0 o_files/tasks/tasks.o
+ .data          0x20000010        0x0 o_files/PendSv_handler.o
+ .data          0x20000010        0x0 o_files/exti_interrupts.o
+                0x20000010                        . = ALIGN (0x4)
+                0x20000010                        _edata = .
+
+.igot.plt       0x20000010        0x0 load address 0x08002338
+ .igot.plt      0x20000010        0x0 o_files/communication_handler.o
+
+.bss            0x20000010     0x1048 load address 0x08002338
+                0x20000010                        . = ALIGN (0x4)
+                0x20000010                        _sbss = .
+ *(.bss*)
+ .bss           0x20000010        0x0 o_files/communication_handler.o
+ .bss           0x20000010        0x0 o_files/main.o
+ .bss           0x20000010        0x4 o_files/gptimer.o
+                0x20000010                timer_ticks
+ .bss           0x20000014        0x0 o_files/dump_heap/dump_heap.o
+ .bss           0x20000014       0x18 o_files/communication_lines/communication_line.o
+                0x20000014                lines
+                0x20000018                accessible_address
+                0x2000001c                accessible_address_count
+                0x20000020                handler_thread
+                0x20000024                handler_params
+                0x20000028                my_machine
+ .bss           0x2000002c        0x0 o_files/systick_interrupt.o
+ *fill*         0x2000002c        0x4 
+ .bss           0x20000030     0x1002 o_files/stm32_startup.o
+                0x20000030                my_dump_heap
+ .bss           0x20001032        0x0 o_files/gpio_driver.o
+ *fill*         0x20001032        0x2 
+ .bss           0x20001034       0x18 o_files/tasks/tasks.o
+                0x20001038                task_bfr_isr
+                0x2000103c                head
+                0x20001040                current_task
+                0x20001044                running_thread
+ .bss           0x2000104c        0xa o_files/PendSv_handler.o
+                0x2000104c                isr_running
+                0x2000104d                isr_running_last
+                0x20001050                th_pointer
+                0x20001054                first_sch
+                0x20001055                first_sch1
+ .bss           0x20001056        0x1 o_files/exti_interrupts.o
+                0x20001056                decoding
+                0x20001058                        . = ALIGN (0x4)
+ *fill*         0x20001057        0x1 
+                0x20001058                        _ebss = .
+                0x20002000                        _estack = (ORIGIN (RAM) + LENGTH (RAM))
+LOAD o_files/communication_handler.o
+LOAD o_files/main.o
+LOAD o_files/gptimer.o
+LOAD o_files/dump_heap/dump_heap.o
+LOAD o_files/communication_lines/communication_line.o
+LOAD o_files/systick_interrupt.o
+LOAD o_files/stm32_startup.o
+LOAD o_files/gpio_driver.o
+LOAD o_files/tasks/tasks.o
+LOAD o_files/PendSv_handler.o
+LOAD o_files/exti_interrupts.o
+OUTPUT(mesh.elf elf32-littlearm)
+LOAD linker stubs
+
+.debug_info     0x00000000     0x2843
+ .debug_info    0x00000000      0x895 o_files/communication_handler.o
+ .debug_info    0x00000895      0x262 o_files/main.o
+ .debug_info    0x00000af7       0xc0 o_files/gptimer.o
+ .debug_info    0x00000bb7      0x176 o_files/dump_heap/dump_heap.o
+ .debug_info    0x00000d2d      0x970 o_files/communication_lines/communication_line.o
+ .debug_info    0x0000169d      0x202 o_files/systick_interrupt.o
+ .debug_info    0x0000189f      0x2e9 o_files/stm32_startup.o
+ .debug_info    0x00001b88      0x1e9 o_files/gpio_driver.o
+ .debug_info    0x00001d71      0x379 o_files/tasks/tasks.o
+ .debug_info    0x000020ea      0x230 o_files/PendSv_handler.o
+ .debug_info    0x0000231a      0x529 o_files/exti_interrupts.o
+
+.debug_abbrev   0x00000000      0xef4
+ .debug_abbrev  0x00000000      0x1c4 o_files/communication_handler.o
+ .debug_abbrev  0x000001c4      0x17b o_files/main.o
+ .debug_abbrev  0x0000033f       0x70 o_files/gptimer.o
+ .debug_abbrev  0x000003af       0xe1 o_files/dump_heap/dump_heap.o
+ .debug_abbrev  0x00000490      0x234 o_files/communication_lines/communication_line.o
+ .debug_abbrev  0x000006c4      0x10e o_files/systick_interrupt.o
+ .debug_abbrev  0x000007d2      0x1a8 o_files/stm32_startup.o
+ .debug_abbrev  0x0000097a       0xff o_files/gpio_driver.o
+ .debug_abbrev  0x00000a79      0x1a3 o_files/tasks/tasks.o
+ .debug_abbrev  0x00000c1c      0x139 o_files/PendSv_handler.o
+ .debug_abbrev  0x00000d55      0x19f o_files/exti_interrupts.o
+
+.debug_aranges  0x00000000      0x160
+ .debug_aranges
+                0x00000000       0x20 o_files/communication_handler.o
+ .debug_aranges
+                0x00000020       0x20 o_files/main.o
+ .debug_aranges
+                0x00000040       0x20 o_files/gptimer.o
+ .debug_aranges
+                0x00000060       0x20 o_files/dump_heap/dump_heap.o
+ .debug_aranges
+                0x00000080       0x20 o_files/communication_lines/communication_line.o
+ .debug_aranges
+                0x000000a0       0x20 o_files/systick_interrupt.o
+ .debug_aranges
+                0x000000c0       0x20 o_files/stm32_startup.o
+ .debug_aranges
+                0x000000e0       0x20 o_files/gpio_driver.o
+ .debug_aranges
+                0x00000100       0x20 o_files/tasks/tasks.o
+ .debug_aranges
+                0x00000120       0x20 o_files/PendSv_handler.o
+ .debug_aranges
+                0x00000140       0x20 o_files/exti_interrupts.o
+
+.debug_macro    0x00000000     0x21f8
+ .debug_macro   0x00000000       0x90 o_files/communication_handler.o
+ .debug_macro   0x00000090      0xad2 o_files/communication_handler.o
+ .debug_macro   0x00000b62       0x22 o_files/communication_handler.o
+ .debug_macro   0x00000b84       0x8e o_files/communication_handler.o
+ .debug_macro   0x00000c12       0x51 o_files/communication_handler.o
+ .debug_macro   0x00000c63      0x103 o_files/communication_handler.o
+ .debug_macro   0x00000d66       0x6a o_files/communication_handler.o
+ .debug_macro   0x00000dd0      0x1df o_files/communication_handler.o
+ .debug_macro   0x00000faf      0x190 o_files/communication_handler.o
+ .debug_macro   0x0000113f      0x129 o_files/main.o
+ .debug_macro   0x00001268       0x24 o_files/main.o
+ .debug_macro   0x0000128c       0x74 o_files/main.o
+ .debug_macro   0x00001300       0x3c o_files/main.o
+ .debug_macro   0x0000133c       0x34 o_files/main.o
+ .debug_macro   0x00001370       0x16 o_files/main.o
+ .debug_macro   0x00001386      0x11c o_files/main.o
+ .debug_macro   0x000014a2       0x9b o_files/main.o
+ .debug_macro   0x0000153d      0x364 o_files/main.o
+ .debug_macro   0x000018a1       0x16 o_files/main.o
+ .debug_macro   0x000018b7       0x4a o_files/main.o
+ .debug_macro   0x00001901       0x34 o_files/main.o
+ .debug_macro   0x00001935       0x10 o_files/main.o
+ .debug_macro   0x00001945       0x58 o_files/main.o
+ .debug_macro   0x0000199d      0x1de o_files/main.o
+ .debug_macro   0x00001b7b       0x16 o_files/main.o
+ .debug_macro   0x00001b91       0x29 o_files/main.o
+ .debug_macro   0x00001bba       0x99 o_files/gptimer.o
+ .debug_macro   0x00001c53       0x7c o_files/dump_heap/dump_heap.o
+ .debug_macro   0x00001ccf       0x84 o_files/communication_lines/communication_line.o
+ .debug_macro   0x00001d53       0x85 o_files/systick_interrupt.o
+ .debug_macro   0x00001dd8       0x9a o_files/stm32_startup.o
+ .debug_macro   0x00001e72       0xd5 o_files/gpio_driver.o
+ .debug_macro   0x00001f47      0x149 o_files/tasks/tasks.o
+ .debug_macro   0x00002090       0x3c o_files/tasks/tasks.o
+ .debug_macro   0x000020cc       0x7f o_files/PendSv_handler.o
+ .debug_macro   0x0000214b       0xad o_files/exti_interrupts.o
+
+.debug_line     0x00000000     0x2288
+ .debug_line    0x00000000      0x779 o_files/communication_handler.o
+ .debug_line    0x00000779      0x205 o_files/main.o
+ .debug_line    0x0000097e      0x183 o_files/gptimer.o
+ .debug_line    0x00000b01      0x1ad o_files/dump_heap/dump_heap.o
+ .debug_line    0x00000cae      0x8d5 o_files/communication_lines/communication_line.o
+ .debug_line    0x00001583      0x16f o_files/systick_interrupt.o
+ .debug_line    0x000016f2      0x1c6 o_files/stm32_startup.o
+ .debug_line    0x000018b8      0x272 o_files/gpio_driver.o
+ .debug_line    0x00001b2a      0x351 o_files/tasks/tasks.o
+ .debug_line    0x00001e7b      0x1c9 o_files/PendSv_handler.o
+ .debug_line    0x00002044      0x244 o_files/exti_interrupts.o
+
+.debug_str      0x00000000     0x7d86
+ .debug_str     0x00000000     0x7d86 o_files/communication_handler.o
+                               0x46a9 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/main.o
+                               0x6d66 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/gptimer.o
+                               0x3f00 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/dump_heap/dump_heap.o
+                               0x410d (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/communication_lines/communication_line.o
+                               0x46f5 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/systick_interrupt.o
+                               0x3e96 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/stm32_startup.o
+                               0x42cb (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/gpio_driver.o
+                               0x4170 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/tasks/tasks.o
+                               0x6dd2 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/PendSv_handler.o
+                               0x3ef8 (size before relaxing)
+ .debug_str     0x00007d86        0x0 o_files/exti_interrupts.o
+                               0x437d (size before relaxing)
+
+.comment        0x00000000       0x1e
+ .comment       0x00000000       0x1e o_files/communication_handler.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/main.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/gptimer.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/dump_heap/dump_heap.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/communication_lines/communication_line.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/systick_interrupt.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/stm32_startup.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/gpio_driver.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/tasks/tasks.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/PendSv_handler.o
+                                 0x1f (size before relaxing)
+ .comment       0x0000001e        0x0 o_files/exti_interrupts.o
+                                 0x1f (size before relaxing)
+
+.ARM.attributes
+                0x00000000       0x2d
+ .ARM.attributes
+                0x00000000       0x2d o_files/communication_handler.o
+ .ARM.attributes
+                0x0000002d       0x2d o_files/main.o
+ .ARM.attributes
+                0x0000005a       0x2d o_files/gptimer.o
+ .ARM.attributes
+                0x00000087       0x2d o_files/dump_heap/dump_heap.o
+ .ARM.attributes
+                0x000000b4       0x2d o_files/communication_lines/communication_line.o
+ .ARM.attributes
+                0x000000e1       0x2d o_files/systick_interrupt.o
+ .ARM.attributes
+                0x0000010e       0x2d o_files/stm32_startup.o
+ .ARM.attributes
+                0x0000013b       0x2d o_files/gpio_driver.o
+ .ARM.attributes
+                0x00000168       0x2d o_files/tasks/tasks.o
+ .ARM.attributes
+                0x00000195       0x2d o_files/PendSv_handler.o
+ .ARM.attributes
+                0x000001c2       0x2d o_files/exti_interrupts.o
+
+.debug_frame    0x00000000      0x73c
+ .debug_frame   0x00000000       0x88 o_files/communication_handler.o
+ .debug_frame   0x00000088       0xa4 o_files/main.o
+ .debug_frame   0x0000012c       0x50 o_files/gptimer.o
+ .debug_frame   0x0000017c       0x60 o_files/dump_heap/dump_heap.o
+ .debug_frame   0x000001dc       0xd0 o_files/communication_lines/communication_line.o
+ .debug_frame   0x000002ac       0x54 o_files/systick_interrupt.o
+ .debug_frame   0x00000300       0x9c o_files/stm32_startup.o
+ .debug_frame   0x0000039c      0x16c o_files/gpio_driver.o
+ .debug_frame   0x00000508       0xb8 o_files/tasks/tasks.o
+ .debug_frame   0x000005c0       0x94 o_files/PendSv_handler.o
+ .debug_frame   0x00000654       0xe8 o_files/exti_interrupts.o
+
+.debug_rnglists
+                0x00000000       0x59
+ .debug_rnglists
+                0x00000000       0x59 o_files/communication_lines/communication_line.o

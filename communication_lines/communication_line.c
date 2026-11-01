@@ -10,9 +10,11 @@ extern volatile uint32_t timer_ticks;
 extern void reset_pin_a(uint8_t pin);
 extern void set_pin_a(uint8_t pin);
 extern void Communication_handler(void *params);
-extern void Fire_PendSv(uint8_t from_isr);
+extern void Fire_PendSv(uint8_t from_isr, thread_t* t_pointer) ;
 extern thread_t* create_thread_linked(char *name, void (*thread_function)(void *),
                          uint32_t stack_size, void *params, uint8_t linked);
+
+extern uint8_t decoding;
 
 communication_line_t **lines;
 accessible_address_t **accessible_address;
@@ -245,6 +247,7 @@ int check_the_bite(communication_line_rx_param_t *params_list) {
 }
 
 void Communication_Line_Default_Read(void *params) {
+    decoding = 1;
   communication_line_rx_param_t *params_list;
   while (1) {
     params_list = (communication_line_rx_param_t *)params;
@@ -346,14 +349,9 @@ void Communication_Line_Default_Read(void *params) {
 
     handler_params->line = lines[params_list->pin - 1];
 
-    uint32_t *handler_thread_pointer = (uint32_t *)handler_thread;
+    thread_t *handler_thread_pointer = handler_thread;
 
-    __asm__ volatile("ldr r2,[%0]      \n\t"
-                     :
-                     : "r"(handler_thread_pointer)
-                     : "memory");
-
-    Fire_PendSv(1);
+    Fire_PendSv(1,handler_thread_pointer);
   }
 }
 

@@ -14,6 +14,10 @@ extern my_heap_t my_heap;
 extern void *allocate_dumb(my_heap_t *heap, size_t size);
 extern void Fire_PendSv(uint8_t from_isr);
 
+extern thread_t* task_bfr_isr;
+extern thread_t* current_task;
+extern uint8_t decoding;
+
 void insert_accessible_address(uint8_t pin, uint8_t nodes_number,
                                uint8_t address) {
   uint8_t wrote = 0;
@@ -98,6 +102,7 @@ int8_t search_for_node(uint8_t address) {
 }
 
 void Communication_handler(void *params) {
+
   communication_line_t *params_list = (communication_line_t *)params;
   communication_line_rx_param_t *rx_params = params_list->params_rx;
   communication_line_tx_param_t *tx_params = params_list->params_tx;
@@ -293,6 +298,10 @@ void Communication_handler(void *params) {
     rx_params->finished_reading_data = 0;
   }
 
+  
+  current_task = task_bfr_isr;
+
+  decoding = 0;
   Fire_PendSv(0);
 
   return;
