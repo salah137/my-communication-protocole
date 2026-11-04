@@ -12,7 +12,9 @@ extern accessible_address_t **accessible_address;
 extern machine_state_t *my_machine;
 extern my_heap_t my_heap;
 extern void *allocate_dumb(my_heap_t *heap, size_t size);
-extern void Fire_PendSv(uint8_t from_isr);
+extern void Fire_PendSv(uint8_t from_isr, thread_t* t_pointer);
+
+extern uint8_t isr_running_last;
 
 extern thread_t* task_bfr_isr;
 extern thread_t* current_task;
@@ -300,9 +302,11 @@ void Communication_handler(void *params) {
 
   
   current_task = task_bfr_isr;
+  __asm__ volatile("dsb; isb");
 
   decoding = 0;
-  Fire_PendSv(0);
+  isr_running_last = 0;
 
-  return;
+Fire_PendSv(0, task_bfr_isr);
+ 
 }

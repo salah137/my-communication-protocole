@@ -115,17 +115,14 @@ void Default_Handler(void) {
   }
 }
 
-__attribute__((naked)) void HardFault_Handler(void) {
-  __asm volatile(
-    "tst lr, #4      \n"
-    "ite eq          \n"
-    "mrseq r0, msp   \n"
-    "mrsne r0, psp   \n"
-    "b hardfault_c   \n");
+void HardFault_Handler(void) {
+    while (1) {
+    
+    }
 }
 
+/* 
 void hardfault_c(uint32_t *frame) {
-    
   volatile uint32_t pc   = frame[6];
   volatile uint32_t lr   = frame[5];
   volatile uint32_t cfsr = *(volatile uint32_t *)0xE000ED28;
@@ -133,6 +130,7 @@ void hardfault_c(uint32_t *frame) {
   (void)pc; (void)lr; (void)cfsr; (void)bfar;
   while (1) { }
 }
+ */
 
 __attribute__((naked)) void SVC_Handler(void) {
   __asm__ volatile("isb                       \n\t"

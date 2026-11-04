@@ -15,6 +15,7 @@ extern thread_t* current_task;
 
 static void from_isr_handler(void);
 static void from_systick_handler(void);
+volatile int hit = 0;
 
 uint8_t isr_running = 0; // if an ISR is firing this flag should be 1 so we go
                          // out of the linked and execute the Isr thread
@@ -28,6 +29,19 @@ uint8_t first_sch1 = 0;
 
 void PendSV_Init(void) { SCB_SHPR3 |= (PENDSV_PRIO_LOWEST << 16); }
 
+static void holy1(){
+    while (1) {
+    
+    }
+}
+
+
+static void holy2(){
+    while (1) {
+    
+    }
+}
+
 void Fire_PendSv(uint8_t from_isr, thread_t* t_pointer) {
   if(t_pointer !=0){
       th_pointer = t_pointer;
@@ -38,9 +52,11 @@ void Fire_PendSv(uint8_t from_isr, thread_t* t_pointer) {
   __asm__ volatile("dsb; isb");
 }
 
-// r2 holds the pointer for the wanted thread
-// r1 holds the pointer for the old thread
+
+
+
 void PendSv_Handler(void) {
+
   __asm__ volatile("cpsid i                 \n\t" :::);
   if (isr_running == 1) {
       if(isr_running_last == 0){
@@ -108,9 +124,9 @@ __attribute__((naked)) void from_isr_handler(void) {
                    "ldr r2, =th_pointer     \n\t"
                    "ldr r2,[r2]             \n\t"
                    "ldr r1, =current_task   \n\t"
-                   "str r2,[r1,#0]          \n\t"
+                   "str r2,[r1]          \n\t"
                    
-                   "ldr r1,=th_pointer      \n\t"
+                   "ldr r1,=current_task      \n\t"
                    "ldr r1,[r1]             \n\t"
                    "ldr r0,[r1,#8]          \n\t"
 
@@ -128,7 +144,7 @@ __attribute__((naked)) void from_isr_handler(void) {
 
 __attribute__((naked)) void from_systick_handler(void) {
   __asm__ volatile(
-      "pop {r7,lr}                  \n\t"
+      "pop {r7,lr}            \n\t"
 
       "cpsid i                 \n\t"
 
@@ -139,6 +155,7 @@ __attribute__((naked)) void from_systick_handler(void) {
       "stmdb r0!,{r4-r11}      \n\t"
 
       "ldr r1,=current_task    \n\t"
+      "cbz r1, done1            \n\t"
       "ldr r1,[r1]             \n\t"
       "str r0,[r1,#8]          \n\t" // change if stack placement is changed
 
@@ -149,6 +166,7 @@ __attribute__((naked)) void from_systick_handler(void) {
 
       "ldr r1,=current_task    \n\t"
       "ldr r1,[r1]             \n\t"
+      "cbz r1, done2           \n\t"
       "ldr r0,[r1,#8]          \n\t"
 
       "ldmia r0!,{r4-r11}      \n\t"
@@ -157,6 +175,13 @@ __attribute__((naked)) void from_systick_handler(void) {
 
       "ldr lr, =0xFFFFFFFD     \n\t"
       "bx lr                   \n\t"
+
+      "done1 :                   \n\t"
+      "bl holy1                  \n\t"
+
+      "done2 :                   \n\t"
+      "bl holy2                  \n\t"
+      
       :
       :
       : "memory");

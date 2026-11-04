@@ -17,7 +17,10 @@ thread_t *running_thread;
 static uint32_t *next_top;
 
 void thread_exit(void) {
+    while (1) {
 
+        
+    }
 }
 
 void build_frame(thread_t* new_task,void* params){
@@ -159,7 +162,7 @@ thread_t *create_thread_linked(char *name, void (*thread_function)(void *),
 void start_routines() { current_task = head; }
 
 void next_task() {
-  if (current_task->id != last_id) {
+  if (current_task->id != last_id && current_task->next_task !=0 ) {
     current_task = current_task->next_task;
   } else {
     start_routines();
