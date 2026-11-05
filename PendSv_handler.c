@@ -177,10 +177,15 @@ __attribute__((naked)) void from_systick_handler(void) {
       "bx lr                   \n\t"
 
       "done1 :                   \n\t"
+      "cpsie i                 \n\t"
+      
       "bl holy1                  \n\t"
 
       "done2 :                   \n\t"
+      "cpsie i                 \n\t"
+
       "bl holy2                  \n\t"
+      
       
       :
       :

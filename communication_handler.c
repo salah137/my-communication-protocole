@@ -302,11 +302,9 @@ void Communication_handler(void *params) {
 
   
   current_task = task_bfr_isr;
-  __asm__ volatile("dsb; isb");
-
   decoding = 0;
   isr_running_last = 0;
 
-Fire_PendSv(0, task_bfr_isr);
+  Fire_PendSv(0, 0);
  
 }

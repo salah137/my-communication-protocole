@@ -49,12 +49,24 @@ void setup_tasks() {
 }
 
 int main() {
-  setup_tasks();
-  start_routines();
-  __asm__ volatile("mov r0,#0");
-  enable_exti() ;
+    __asm__ volatile("cpsid i   \n\t" :::); 
   TIM2_Init();
+  __asm__ volatile("cpsid i   \n\t" :::);
+  setup_tasks();
+  __asm__ volatile("cpsid i   \n\t" :::);
+  
+  start_routines();
+  __asm__ volatile("cpsid i   \n\t" :::);
+  
+  __asm__ volatile("cpsid i   \n\t" :::);
+  
+  enable_exti() ;
+  __asm__ volatile("cpsid i   \n\t" :::);  
+
   Systick_Init();
+  __asm__ volatile("cpsie i   \n\t" :::);  
+  
+ 
 
   Fire_PendSv(0,0);
 

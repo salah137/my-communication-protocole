@@ -73,10 +73,10 @@ void enable_exti(void) {
 
   // Drop anything latched while configuring
   EXTI_PR = EXTI_LINES_MASK;
-  NVIC_ICPR0 = (1U << 7) | (1U << 8) | (1U << 9) | (1U << 10);
+  NVIC_ICPR0 |= (1U << 7) | (1U << 8) | (1U << 9) | (1U << 10);
 
   EXTI_IMR = EXTI_LINES_MASK;
-  NVIC_ISER0 = (1U << 7) | (1U << 8) | (1U << 9) | (1U << 10);
+  NVIC_ISER0 |= (1U << 7) | (1U << 8) | (1U << 9) | (1U << 10);
 }
 
 void g_handler(uint8_t i) {
